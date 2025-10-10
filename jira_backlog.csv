@@ -1,0 +1,25 @@
+Summary,Issue Type,Epic Link,Start Date,Due Date,Description
+"Phase 1 – Planification & Setup Dev,Epic,,2025-09-04,2025-10-03,""Mise en place projet, Jira, GitHub, setup dev"""
+Rédiger cahier des charges final,Story,Phase 1 – Planification & Setup Dev,2025-09-04,2025-09-10,Rédaction du CDC complet avec planning et livrables
+Créer backlog Jira (Epics, Stories, Tasks),Story,Phase 1 – Planification & Setup Dev,2025-09-10,2025-09-12,Structurer backlog agile dans Jira
+Setup environnement dev (Docker, FastAPI, React),Story,Phase 1 – Planification & Setup Dev,2025-09-12,2025-09-19,Préparer stack technique et conteneurisation
+"Phase 2 – Collecte & Préparation Données,Epic,,2025-10-03,2025-10-31,""Collecte, preprocessing, conformité RGPD"""
+Identifier sources financières (BAM, AMMC, BVC, ACAPS, presse),Story,Phase 2 – Collecte & Préparation Données,2025-10-03,2025-10-07,Lister et valider sources documentaires
+Collecte manuelle & scraping données,Story,Phase 2 – Collecte & Préparation Données,2025-10-07,2025-10-14,Téléchargement et scraping des rapports
+"Nettoyage & préprocessing données,Story,Phase 2 – Collecte & Préparation Données,2025-10-14,2025-10-21,""Nettoyage PDF/CSV, normalisation formats"""
+Vérifier conformité RGPD,Task,Nettoyage & préprocessing données,2025-10-21,2025-10-24,Assurer conformité légale données personnelles
+"Phase 3 – Entraînement & Optimisation Modèle RAG,Epic,,2025-10-31,2025-11-14,""Training, tuning et validation du modèle"""
+Préparer pipeline embeddings + DB vectorielle,Story,Phase 3 – Entraînement & Optimisation Modèle RAG,2025-10-31,2025-11-05,Mise en place Chroma + embeddings
+Entraîner modèle RAG sur données locales,Story,Phase 3 – Entraînement & Optimisation Modèle RAG,2025-11-05,2025-11-10,Training modèle IA
+"Évaluer performances modèle (métriques),Story,Phase 3 – Entraînement & Optimisation Modèle RAG,2025-11-10,2025-11-14,""Rapport précision, recall, temps de réponse"""
+Phase 4 – Pipelines & Data Engineering,Epic,,2025-11-14,2025-11-28,Ingestion automatisée et pipelines data
+Développer pipeline ingestion automatique,Story,Phase 4 – Pipelines & Data Engineering,2025-11-14,2025-11-20,Automatiser ingestion données financières
+Intégrer pipeline preprocessing & stockage,Story,Phase 4 – Pipelines & Data Engineering,2025-11-20,2025-11-28,Pipeline complet ingestion + nettoyage
+"Phase 5 – Déploiement & MLOps,Epic,,2025-11-28,2025-12-12,""Déploiement Docker, CI/CD, monitoring"""
+Créer Dockerfile & docker-compose,Story,Phase 5 – Déploiement & MLOps,2025-11-28,2025-12-02,Conteneurisation du projet
+Mettre en place CI/CD (GitHub Actions),Story,Phase 5 – Déploiement & MLOps,2025-12-02,2025-12-06,Automatiser build et déploiement
+Configurer monitoring modèles (MLflow, Evidently),Story,Phase 5 – Déploiement & MLOps,2025-12-06,2025-12-12,Suivi dérive et performances
+"Phase 6 – API & Interface Web,Epic,,2025-12-12,2026-01-02,""Développement API, UI et tests finaux"""
+"Développer API sécurisée (FastAPI + JWT),Story,Phase 6 – API & Interface Web,2025-12-12,2025-12-19,""Endpoints auth, predict, metrics"""
+Développer interface Web (React),Story,Phase 6 – API & Interface Web,2025-12-19,2025-12-26,UI chat + dashboard résultats
+"Intégration front/back + tests sécurité,Story,Phase 6 – API & Interface Web,2025-12-26,2026-01-02,""Tests unitaires, d’intégration et sécurité"""
