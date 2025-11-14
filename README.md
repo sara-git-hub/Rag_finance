@@ -1,6 +1,6 @@
 ## 🚀 Installation
 
-### 1. Créer un environnement virtuel
+### Créer un environnement virtuel
 
 ```bash
 python -m venv venv
@@ -11,7 +11,7 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 venv\Scripts\activate  # Windows
 ```
 
-### 2. Installer les dépendances
+### Installer les dépendances
 
 ```bash
 # Option 1: Si vous avez une erreur avec pip, utilisez cette commande (recommandée):
@@ -19,4 +19,11 @@ venv\Scripts\activate  # Windows
 
 # Option 2: Si la première option ne fonctionne pas, essayez:
 pip install -r requirements.txt
+```
+pip freeze > requirements.txt
+
+### Run the FastAPI server
+
+```bash
+$ uvicorn main:app --reload --host 0.0.0.0 --port 5000
 ```
