@@ -1,10 +1,11 @@
-from fastapi import FastAPI, APIRouter, status, Request
+from fastapi import FastAPI, APIRouter, status, Request, Depends
 from fastapi.responses import JSONResponse
 from routes.schemes.nlp import PushRequest, SearchRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from controllers import NLPController
 from models import ResponseSignal
+from helpers.auth import require_admin, get_current_user
 from tqdm.auto import tqdm
 
 import logging
@@ -17,7 +18,8 @@ nlp_router = APIRouter(
 )
 
 @nlp_router.post("/index/push/{project_id}")
-async def index_project(request: Request, project_id: int, push_request: PushRequest):
+async def index_project(request: Request, project_id: int, push_request: PushRequest,
+                       current_user: dict = Depends(require_admin)):
 
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
@@ -101,7 +103,8 @@ async def index_project(request: Request, project_id: int, push_request: PushReq
     )
 
 @nlp_router.get("/index/info/{project_id}")
-async def get_project_index_info(request: Request, project_id: int):
+async def get_project_index_info(request: Request, project_id: int,
+                                current_user: dict = Depends(require_admin)):
     
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
@@ -128,7 +131,8 @@ async def get_project_index_info(request: Request, project_id: int):
     )
 
 @nlp_router.post("/index/search/{project_id}")
-async def search_index(request: Request, project_id: int, search_request: SearchRequest):
+async def search_index(request: Request, project_id: int, search_request: SearchRequest,
+                      current_user: dict = Depends(get_current_user)):
     
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
@@ -165,7 +169,8 @@ async def search_index(request: Request, project_id: int, search_request: Search
     )
 
 @nlp_router.post("/index/answer/{project_id}")
-async def answer_rag(request: Request, project_id: int, search_request: SearchRequest):
+async def answer_rag(request: Request, project_id: int, search_request: SearchRequest,
+                    current_user: dict = Depends(get_current_user)):
     
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client

@@ -1,13 +1,17 @@
 from fastapi import FastAPI
-from routes import base, data, nlp
+from routes import base, data, nlp, auth
 from helpers.config import get_settings
 from stores.llm.LLMProviderFactory import LLMProviderFactory
 from stores.vectordb.VectorDBProviderFactory import VectorDBProviderFactory
 from stores.llm.templates.template_parser import TemplateParser
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 app = FastAPI()
+
+# Add Prometheus metrics middleware
+app.add_middleware(PrometheusMiddleware, app_name="rag_finance", group_paths=True)
 
 async def startup_span():
     settings = get_settings()
@@ -51,5 +55,9 @@ app.on_event("startup")(startup_span)
 app.on_event("shutdown")(shutdown_span)
 
 app.include_router(base.base_router)
+app.include_router(auth.auth_router)
 app.include_router(data.data_router)
 app.include_router(nlp.nlp_router)
+
+# Add Prometheus metrics endpoint (obscured path for security)
+app.add_route("/TrhBVe_m5gg2002_E5VVqS", handle_metrics)

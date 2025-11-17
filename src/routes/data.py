@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
 from fastapi.responses import JSONResponse
 import os
 from helpers.config import get_settings, Settings
+from helpers.auth import require_admin
 from controllers import DataController, ProjectController, ProcessController
 import aiofiles
 from models import ResponseSignal
@@ -23,7 +24,8 @@ data_router = APIRouter(
 
 @data_router.post("/upload/{project_id}")
 async def upload_data(request: Request, project_id: int, file: UploadFile,
-                      app_settings: Settings = Depends(get_settings)):
+                      app_settings: Settings = Depends(get_settings),
+                      current_user: dict = Depends(require_admin)):
         
     
     project_model = await ProjectModel.create_instance(
@@ -90,7 +92,8 @@ async def upload_data(request: Request, project_id: int, file: UploadFile,
         )
 
 @data_router.post("/process/{project_id}")
-async def process_endpoint(request: Request, project_id: int, process_request: ProcessRequest):
+async def process_endpoint(request: Request, project_id: int, process_request: ProcessRequest,
+                          current_user: dict = Depends(require_admin)):
 
     chunk_size = process_request.chunk_size
     overlap_size = process_request.overlap_size
