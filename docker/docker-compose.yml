@@ -19,7 +19,21 @@ services:
     env_file:
       - ./env/.env.app
 
-  # Nginx Service
+  # Frontend React
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend/Dockerfile
+    container_name: frontend
+    ports:
+      - "3001:80"
+    networks:
+      - backend
+    restart: always
+    depends_on:
+      - fastapi
+
+  # Nginx Service (Reverse Proxy)
   nginx:
     image: nginx:stable-alpine3.20-perl
     container_name: nginx
@@ -29,6 +43,7 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - fastapi
+      - frontend
     networks:
       - backend
     restart: always
