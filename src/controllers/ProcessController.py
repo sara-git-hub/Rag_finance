@@ -1,108 +1,135 @@
+"""
+ProcessController - Version LangChain
+Gère le traitement des documents avec DocumentService
+"""
+
 from .BaseController import BaseController
 from .ProjectController import ProjectController
-import os
-from langchain_community.document_loaders import TextLoader
-from langchain_community.document_loaders import PyMuPDFLoader
-from models import ProcessingEnum
-from typing import List
-from dataclasses import dataclass
+from services import DocumentService
+from typing import List, Optional
+from langchain_core.documents import Document
 
-@dataclass
-class Document:
-    page_content: str
-    metadata: dict
 
 class ProcessController(BaseController):
+    """Controller pour le traitement de documents avec LangChain"""
 
-    def __init__(self, project_id: str):
+    def __init__(self, project_id: str, chunk_size: int = 1000, chunk_overlap: int = 200):
+        """
+        Initialize ProcessController
+
+        Args:
+            project_id: ID du projet
+            chunk_size: Taille des chunks (défaut: 1000)
+            chunk_overlap: Chevauchement entre chunks (défaut: 200)
+        """
         super().__init__()
 
         self.project_id = project_id
         self.project_path = ProjectController().get_project_path(project_id=project_id)
 
-    def get_file_extension(self, file_id: str):
-        return os.path.splitext(file_id)[-1]
-
-    def get_file_loader(self, file_id: str):
-
-        file_ext = self.get_file_extension(file_id=file_id)
-        file_path = os.path.join(
-            self.project_path,
-            file_id
+        # Initialize DocumentService with LangChain
+        self.doc_service = DocumentService(
+            project_path=self.project_path,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=["\n\n", "\n", ". ", " ", ""]  # Intelligent separators
         )
 
-        if not os.path.exists(file_path):
+    def get_file_content(self, file_id: str) -> Optional[List[Document]]:
+        """
+        Load document content
+
+        Args:
+            file_id: File identifier
+
+        Returns:
+            List of LangChain Document objects or None
+        """
+        return self.doc_service.load_document(file_id)
+
+    def process_file_content(
+        self,
+        file_content: List[Document],
+        file_id: str,
+        chunk_size: Optional[int] = None,
+        overlap_size: Optional[int] = None
+    ) -> List[Document]:
+        """
+        Process and chunk file content using LangChain
+
+        Args:
+            file_content: List of Document objects from loader
+            file_id: File identifier
+            chunk_size: Optional custom chunk size
+            overlap_size: Optional custom overlap size
+
+        Returns:
+            List of chunked Document objects
+        """
+        # Use custom parameters if provided
+        if chunk_size is not None or overlap_size is not None:
+            # Create temporary service with custom params
+            temp_service = DocumentService(
+                project_path=self.project_path,
+                chunk_size=chunk_size or self.doc_service.chunk_size,
+                chunk_overlap=overlap_size or self.doc_service.chunk_overlap
+            )
+            chunks = temp_service.chunk_documents(file_content, preserve_metadata=True)
+        else:
+            # Use default service
+            chunks = self.doc_service.chunk_documents(file_content, preserve_metadata=True)
+
+        # Add file_id to metadata
+        for chunk in chunks:
+            chunk.metadata["file_id"] = file_id
+
+        return chunks
+
+    def process_file(
+        self,
+        file_id: str,
+        chunk_size: Optional[int] = None,
+        overlap_size: Optional[int] = None
+    ) -> Optional[List[Document]]:
+        """
+        Complete pipeline: load and chunk a file
+
+        Args:
+            file_id: File identifier
+            chunk_size: Optional custom chunk size
+            overlap_size: Optional custom overlap size
+
+        Returns:
+            List of chunked Document objects or None
+        """
+        # Load document
+        file_content = self.get_file_content(file_id)
+
+        if not file_content:
             return None
 
-        if file_ext == ProcessingEnum.TXT.value:
-            return TextLoader(file_path, encoding="utf-8")
-
-        if file_ext == ProcessingEnum.PDF.value:
-            return PyMuPDFLoader(file_path)
-        
-        return None
-
-    def get_file_content(self, file_id: str):
-
-        loader = self.get_file_loader(file_id=file_id)
-        if loader:
-            return loader.load()
-
-        return None
-
-    def process_file_content(self, file_content: list, file_id: str,
-                            chunk_size: int=100, overlap_size: int=20):
-
-        file_content_texts = [
-            rec.page_content
-            for rec in file_content
-        ]
-
-        file_content_metadata = [
-            rec.metadata
-            for rec in file_content
-        ]
-
-        # chunks = text_splitter.create_documents(
-        #     file_content_texts,
-        #     metadatas=file_content_metadata
-        # )
-
-        chunks = self.process_simpler_splitter(
-            texts=file_content_texts,
-            metadatas=file_content_metadata,
+        # Process and chunk
+        chunks = self.process_file_content(
+            file_content=file_content,
+            file_id=file_id,
             chunk_size=chunk_size,
+            overlap_size=overlap_size
         )
 
         return chunks
 
-    def process_simpler_splitter(self, texts: List[str], metadatas: List[dict], chunk_size: int, splitter_tag: str="\n"):
-        
-        full_text = " ".join(texts)
+    def get_chunks_stats(self, chunks: List[Document]) -> dict:
+        """
+        Get statistics about chunks
 
-        # split by splitter_tag
-        lines = [ doc.strip() for doc in full_text.split(splitter_tag) if len(doc.strip()) > 1 ]
+        Args:
+            chunks: List of Document chunks
 
-        chunks = []
-        current_chunk = ""
+        Returns:
+            Dictionary with statistics
+        """
+        return self.doc_service.get_chunks_stats(chunks)
 
-        for line in lines:
-            current_chunk += line + splitter_tag
-            if len(current_chunk) >= chunk_size:
-                chunks.append(Document(
-                    page_content=current_chunk.strip(),
-                    metadata={}
-                ))
-
-                current_chunk = ""
-
-        if len(current_chunk) >= 0:
-            chunks.append(Document(
-                page_content=current_chunk.strip(),
-                metadata={}
-            ))
-
-        return chunks
-
-
-    
+    def get_file_extension(self, file_id: str) -> str:
+        """Get file extension from file_id"""
+        return self.doc_service.get_file_extension(file_id)

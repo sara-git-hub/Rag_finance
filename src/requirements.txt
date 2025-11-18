@@ -2,20 +2,19 @@ fastapi==0.110.2
 uvicorn[standard]==0.29.0
 python-multipart==0.0.9
 python-dotenv==1.0.1
-pydantic-settings==2.2.1
+pydantic-settings>=2.4.0
 email-validator==2.1.1
 aiofiles==23.2.1
 
-# LangChain Core & Integrations
-langchain==0.3.17
-langchain-core==0.3.28
-langchain-community==0.3.17
-langchain-openai==0.2.14
-langchain-cohere==0.3.4
-langchain-huggingface==0.1.2
-langchain-qdrant==0.2.1
-langchain-postgres==0.0.16
-langchain-text-splitters==0.3.5
+# LangChain Core & Integrations (versions compatibles)
+langchain>=0.3.17
+langchain-community>=0.3.17
+langchain-openai>=0.2.0
+langchain-cohere>=0.3.0
+langchain-huggingface>=0.1.0
+langchain-qdrant>=0.2.0
+langchain-postgres>=0.0.16
+langchain-text-splitters>=0.3.0
 
 # Local Embeddings
 sentence-transformers==2.7.0
@@ -33,7 +32,7 @@ SQLAlchemy==2.0.36
 asyncpg==0.30.0
 alembic==1.14.0
 psycopg2==2.9.10
-pgvector==0.4.0
+pgvector>=0.2.5,<0.4
 
 # LLM Providers (kept for compatibility)
 openai==1.66.3
