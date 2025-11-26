@@ -1,5 +1,24 @@
 
 services:
+  # Ollama LLM (Local - FREE!)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - backend
+    restart: always
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
   # FastAPI Application
   fastapi:
     build:
@@ -11,18 +30,28 @@ services:
     volumes:
       - fastapi_data:/app/assets
       - huggingface_cache:/root/.cache/huggingface
+      # Mount selective des dossiers de code (évite les rebuilds)
+      - ../src/controllers:/app/controllers:ro
+      - ../src/services:/app/services:ro
+      - ../src/routes:/app/routes:ro
+      - ../src/helpers:/app/helpers:ro
+      - ../src/main.py:/app/main.py:ro
     networks:
       - backend
     restart: always
     depends_on:
       pgvector:
         condition: service_healthy
+      ollama:
+        condition: service_started
     env_file:
       - ./env/.env.app
     environment:
       # LangChain & HuggingFace configuration
       - TRANSFORMERS_CACHE=/root/.cache/huggingface
       - SENTENCE_TRANSFORMERS_HOME=/root/.cache/huggingface
+      # Ollama configuration
+      - OLLAMA_BASE_URL=http://ollama:11434
     # Resource limits for embeddings model
     deploy:
       resources:
@@ -168,6 +197,7 @@ networks:
     driver: bridge
 
 volumes:
+  ollama_models:
   fastapi_data:
   huggingface_cache:
   pgvector:

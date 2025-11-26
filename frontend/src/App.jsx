@@ -11,6 +11,12 @@ import IndexPage from './pages/IndexPage';
 import Users from './pages/Users';
 import Search from './pages/Search';
 import QA from './pages/QA';
+import AdminProjects from './pages/admin/AdminProjects';
+import AdminAssets from './pages/admin/AdminAssets';
+import AdminChunks from './pages/admin/AdminChunks';
+import AdminConversations from './pages/admin/AdminConversations';
+import AdminMessages from './pages/admin/AdminMessages';
+import AdminVectors from './pages/admin/AdminVectors';
 
 function App() {
   return (
@@ -79,6 +85,56 @@ function App() {
             element={
               <ProtectedRoute>
                 <QA />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin management routes */}
+          <Route
+            path="/admin/projects"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminProjects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/assets"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminAssets />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/chunks"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminChunks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/conversations"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminConversations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/messages"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminMessages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vectors"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminVectors />
               </ProtectedRoute>
             }
           />

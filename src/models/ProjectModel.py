@@ -24,7 +24,7 @@ class ProjectModel(BaseDataModel):
         
         return project
 
-    async def get_project_or_create_one(self, project_id: str):
+    async def get_project_or_create_one(self, project_id: str, project_language: str = "fr"):
         async with self.db_client() as session:
             async with session.begin():
                 query = select(Project).where(Project.project_id == project_id)
@@ -32,13 +32,28 @@ class ProjectModel(BaseDataModel):
                 project = result.scalar_one_or_none()
                 if project is None:
                     project_rec = Project(
-                        project_id = project_id
+                        project_id = project_id,
+                        project_language = project_language
                     )
 
                     project = await self.create_project(project=project_rec)
                     return project
                 else:
                     return project
+
+    async def update_project_language(self, project_id: int, language: str):
+        """Update the language of a project"""
+        async with self.db_client() as session:
+            async with session.begin():
+                query = select(Project).where(Project.project_id == project_id)
+                result = await session.execute(query)
+                project = result.scalar_one_or_none()
+
+                if project:
+                    project.project_language = language
+                    await session.refresh(project)
+                    return project
+                return None
 
     async def get_all_projects(self, page: int=1, page_size: int=10):
 
@@ -56,6 +71,7 @@ class ProjectModel(BaseDataModel):
                     total_pages += 1
 
                 query = select(Project).offset((page - 1) * page_size ).limit(page_size)
-                projects = await session.execute(query).scalars().all()
+                result = await session.execute(query)
+                projects = result.scalars().all()
 
                 return projects, total_pages

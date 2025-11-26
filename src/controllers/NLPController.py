@@ -10,6 +10,9 @@ from langchain_core.documents import Document
 from services import VectorStoreService, RAGService
 from langchain_openai import ChatOpenAI
 from langchain_cohere import ChatCohere
+from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
+import os
 
 
 class NLPController(BaseController):
@@ -17,18 +20,21 @@ class NLPController(BaseController):
 
     def __init__(self, embeddings_service, prompt_service, generation_backend: str,
                  generation_model: str, api_key: str, vector_db_backend: str = "qdrant",
-                 vector_db_path: str = "assets/database"):
+                 vector_db_path: str = "assets/database", connection_string: str = None,
+                 qdrant_url: str = None):
         """
         Initialize NLP Controller with LangChain services
 
         Args:
             embeddings_service: EmbeddingsService instance
             prompt_service: PromptService instance
-            generation_backend: "openai" or "cohere"
+            generation_backend: "openai", "cohere", "ollama", or "groq"
             generation_model: Model ID
-            api_key: API key for generation
+            api_key: API key for generation (not needed for ollama)
             vector_db_backend: "qdrant" or "pgvector"
-            vector_db_path: Path for vector DB storage
+            vector_db_path: Path for vector DB storage (for local Qdrant)
+            connection_string: PostgreSQL connection string (for PGVector)
+            qdrant_url: URL for remote Qdrant (e.g. http://qdrant:6333 in Docker)
         """
         super().__init__()
 
@@ -39,6 +45,8 @@ class NLPController(BaseController):
         self.api_key = api_key
         self.vector_db_backend = vector_db_backend
         self.vector_db_path = vector_db_path
+        self.connection_string = connection_string
+        self.qdrant_url = qdrant_url
 
         # Cache for vector stores (one per project)
         self._vectorstores = {}
@@ -65,13 +73,25 @@ class NLPController(BaseController):
         if project_id in self._vectorstores:
             return self._vectorstores[project_id]
 
-        # Create new VectorStoreService
+        # Prepare config based on provider
+        config = {"distance": "cosine"}
+
+        if self.vector_db_backend == "pgvector":
+            # For PGVector, use connection_string
+            config["connection_string"] = self.connection_string
+        else:
+            # For Qdrant: use URL if provided (Docker), otherwise use path (local)
+            if self.qdrant_url:
+                config["url"] = self.qdrant_url
+            else:
+                config["path"] = self.vector_db_path
+
+        # Create new VectorStoreService with async_client
         vectorstore = VectorStoreService(
             embeddings=self.embeddings_service.embeddings,
             provider=self.vector_db_backend,
             collection_name=collection_name,
-            path=self.vector_db_path,
-            distance="cosine"
+            **config
         )
 
         # Cache it
@@ -95,8 +115,23 @@ class NLPController(BaseController):
                 temperature=0.7,
                 max_tokens=1000
             )
+        elif self.generation_backend == "ollama":
+            base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            return ChatOllama(
+                model=self.generation_model,
+                base_url=base_url,
+                temperature=0.7,
+                num_predict=1000
+            )
+        elif self.generation_backend == "groq":
+            return ChatGroq(
+                model=self.generation_model,
+                groq_api_key=self.api_key,
+                temperature=0.7,
+                max_tokens=1000
+            )
         else:
-            raise ValueError(f"Unsupported generation backend: {self.generation_backend}")
+            raise ValueError(f"Unsupported generation backend: {self.generation_backend}. Supported: openai, cohere, ollama, groq")
 
     async def reset_vector_db_collection(self, project: Project) -> bool:
         """
@@ -119,6 +154,31 @@ class NLPController(BaseController):
             return True
         except Exception as e:
             print(f"Error resetting collection: {e}")
+            return False
+
+    async def delete_vectors_by_chunk_ids(self, project: Project, chunk_ids: List[int]) -> bool:
+        """
+        Delete vectors from collection by chunk IDs
+
+        Args:
+            project: Project instance
+            chunk_ids: List of chunk IDs to delete
+
+        Returns:
+            True if successful
+        """
+        try:
+            if not chunk_ids:
+                return True
+
+            vectorstore = self._get_vectorstore(project)
+
+            # Delete vectors with matching chunk_ids in metadata
+            success = vectorstore.delete_by_metadata({"chunk_id": {"$in": chunk_ids}})
+
+            return success
+        except Exception as e:
+            print(f"Error deleting vectors by chunk_ids: {e}")
             return False
 
     async def get_vector_db_collection_info(self, project: Project) -> dict:
@@ -183,14 +243,14 @@ class NLPController(BaseController):
             print(f"Error indexing into vector DB: {e}")
             return False
 
-    async def search_vector_db_collection(
+    def search_vector_db_collection(
         self,
         project: Project,
         text: str,
         limit: int = 10
     ) -> Optional[List[dict]]:
         """
-        Search vector DB collection
+        Search vector DB collection (SYNC version - deprecated, use async version)
 
         Args:
             project: Project instance
@@ -212,10 +272,20 @@ class NLPController(BaseController):
             # Format results to match old interface
             formatted_results = []
             for doc, score in results:
+                # Convert distance to similarity for better UX
+                # PGVector returns distance (smaller = more similar)
+                # We convert to similarity (larger = more similar)
+                if self.vector_db_backend == "pgvector":
+                    # For cosine distance: similarity = 1 - distance
+                    similarity_score = 1.0 - float(score)
+                else:
+                    # For other backends, keep original score
+                    similarity_score = float(score)
+
                 formatted_results.append({
                     "text": doc.page_content,
                     "metadata": doc.metadata,
-                    "score": float(score),
+                    "score": similarity_score,
                     "chunk_id": doc.metadata.get("chunk_id")
                 })
 
@@ -225,7 +295,59 @@ class NLPController(BaseController):
             print(f"Error searching vector DB: {e}")
             return None
 
-    async def answer_rag_question(
+    async def asearch_vector_db_collection(
+        self,
+        project: Project,
+        text: str,
+        limit: int = 10
+    ) -> Optional[List[dict]]:
+        """
+        ASYNC version: Search vector DB collection
+
+        Args:
+            project: Project instance
+            text: Query text
+            limit: Number of results
+
+        Returns:
+            List of search results or None
+        """
+        try:
+            vectorstore = self._get_vectorstore(project)
+
+            # Use async search method
+            results = await vectorstore.asimilarity_search_with_score(text, k=limit)
+
+            if not results:
+                return None
+
+            # Format results to match old interface
+            formatted_results = []
+            for doc, score in results:
+                # Convert distance to similarity for better UX
+                # PGVector returns distance (smaller = more similar)
+                # We convert to similarity (larger = more similar)
+                if self.vector_db_backend == "pgvector":
+                    # For cosine distance: similarity = 1 - distance
+                    similarity_score = 1.0 - float(score)
+                else:
+                    # For other backends, keep original score
+                    similarity_score = float(score)
+
+                formatted_results.append({
+                    "text": doc.page_content,
+                    "metadata": doc.metadata,
+                    "score": similarity_score,
+                    "chunk_id": doc.metadata.get("chunk_id")
+                })
+
+            return formatted_results
+
+        except Exception as e:
+            print(f"Error searching vector DB (async): {e}")
+            return None
+
+    async def aanswer_rag_question(
         self,
         project: Project,
         query: str,
@@ -233,7 +355,7 @@ class NLPController(BaseController):
         conversation_history: Optional[List[dict]] = None
     ) -> tuple:
         """
-        Generate RAG answer using LangChain
+        ASYNC version: Generate RAG answer using LangChain native async
 
         Args:
             project: Project instance
@@ -253,19 +375,33 @@ class NLPController(BaseController):
             # Update retriever config
             vectorstore_service = vectorstore
 
-            # Create RAG service
+            # Get project language (default to "fr" if not set)
+            project_language = getattr(project, 'project_language', 'fr')
+
+            # Create PromptService with project-specific language
+            from services import PromptService
+            project_prompt_service = PromptService(language=project_language)
+
+            # Create RAG service with project-specific language
             rag_service = RAGService(
                 vectorstore_service=vectorstore_service,
                 llm=llm,
-                prompt_service=self.prompt_service,
-                language=self.prompt_service.language
+                prompt_service=project_prompt_service,
+                language=project_language
             )
 
             # Update retriever to fetch more documents
             rag_service.update_retriever_config(search_type="similarity", k=limit)
 
-            # Generate answer with sources
-            result = rag_service.answer_with_sources(query)
+            # Generate answer with sources using ASYNC method
+            # Use conversational method if history is provided
+            if conversation_history:
+                result = await rag_service.aanswer_with_sources_and_history(
+                    question=query,
+                    chat_history=conversation_history
+                )
+            else:
+                result = await rag_service.aanswer_with_sources(query)
 
             answer = result.get("answer", "")
             sources = result.get("sources", [])
@@ -283,7 +419,7 @@ class NLPController(BaseController):
             return answer, formatted_sources, conversation_history
 
         except Exception as e:
-            print(f"Error answering RAG question: {e}")
+            print(f"Error answering RAG question (async): {e}")
             import traceback
             traceback.print_exc()
             return None, None, None
@@ -304,10 +440,18 @@ class NLPController(BaseController):
             vectorstore = self._get_vectorstore(project)
             llm = self._get_llm()
 
+            # Get project language (default to "fr" if not set)
+            project_language = getattr(project, 'project_language', 'fr')
+
+            # Create PromptService with project-specific language
+            from services import PromptService
+            project_prompt_service = PromptService(language=project_language)
+
             rag_service = RAGService(
                 vectorstore_service=vectorstore,
                 llm=llm,
-                prompt_service=self.prompt_service
+                prompt_service=project_prompt_service,
+                language=project_language
             )
 
             rag_service.update_retriever_config(k=limit)

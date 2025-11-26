@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { dataAPI } from '../services/api';
 import Navbar from '../components/Navbar';
+import ProjectLanguage from '../components/ProjectLanguage';
+import { useAuth } from '../context/AuthContext';
 
 const Upload = () => {
   const [projectId, setProjectId] = useState('1');
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const { user } = useAuth();
+
+  console.log('Upload - User from context:', user);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -71,6 +76,22 @@ const Upload = () => {
                   min="1"
                 />
               </div>
+
+              {/* Project Language Display/Edit */}
+              {projectId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Langue du Projet
+                  </label>
+                  <ProjectLanguage
+                    projectId={projectId}
+                    isAdmin={user?.role === 'admin'}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    La langue détermine les prompts utilisés par le système RAG
+                  </p>
+                </div>
+              )}
 
               {/* File Input */}
               <div>

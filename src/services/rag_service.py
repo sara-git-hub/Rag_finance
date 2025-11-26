@@ -11,7 +11,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from langchain_cohere import ChatCohere
+from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
+import os
 
 from .vectorstore_service import VectorStoreService
 from .prompt_service import PromptService
@@ -165,6 +168,137 @@ class RAGService:
 
         return result
 
+    async def aanswer_with_sources(self, question: str) -> dict:
+        """
+        ASYNC version: Answer with source documents included
+
+        Args:
+            question: User question
+
+        Returns:
+            Dictionary with answer and sources
+        """
+        # Build chain that returns both answer and sources
+        retriever = self.vectorstore_service.as_retriever(
+            search_kwargs={"k": 5}
+        )
+
+        prompt = self.prompt_service.create_rag_prompt()
+
+        # Parallel chain: retrieve docs and pass question
+        chain_with_sources = RunnableParallel(
+            {
+                "answer": (
+                    {
+                        "context": retriever | self._format_docs,
+                        "question": RunnablePassthrough()
+                    }
+                    | prompt
+                    | self.llm
+                    | StrOutputParser()
+                ),
+                "sources": retriever
+            }
+        )
+
+        # Use ainvoke for async execution
+        result = await chain_with_sources.ainvoke(question)
+
+        # Format sources
+        result["sources"] = [
+            {
+                "content": doc.page_content,
+                "metadata": doc.metadata
+            }
+            for doc in result["sources"]
+        ]
+
+        return result
+
+    async def aanswer_with_sources_and_history(
+        self,
+        question: str,
+        chat_history: Optional[List[dict]] = None
+    ) -> dict:
+        """
+        ASYNC version: Answer with source documents and conversation history
+
+        Args:
+            question: User question
+            chat_history: Optional conversation history
+                         Format: [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}, ...]
+
+        Returns:
+            Dictionary with answer and sources
+        """
+        # Build chain that returns both answer and sources
+        retriever = self.vectorstore_service.as_retriever(
+            search_kwargs={"k": 5}
+        )
+
+        # Use conversational prompt if history provided
+        if chat_history:
+            from langchain_core.messages import HumanMessage, AIMessage
+
+            prompt = self.prompt_service.create_conversational_rag_prompt()
+
+            # Convert history to LangChain message format
+            formatted_history = []
+            for msg in chat_history:
+                if msg["role"] == "user":
+                    formatted_history.append(HumanMessage(content=msg["content"]))
+                elif msg["role"] == "assistant":
+                    formatted_history.append(AIMessage(content=msg["content"]))
+
+            # Parallel chain with history
+            chain_with_sources = RunnableParallel(
+                {
+                    "answer": (
+                        {
+                            "context": retriever | self._format_docs,
+                            "question": RunnablePassthrough(),
+                            "chat_history": lambda x: formatted_history  # Pass history
+                        }
+                        | prompt
+                        | self.llm
+                        | StrOutputParser()
+                    ),
+                    "sources": retriever
+                }
+            )
+        else:
+            # Use regular prompt without history
+            prompt = self.prompt_service.create_rag_prompt()
+
+            chain_with_sources = RunnableParallel(
+                {
+                    "answer": (
+                        {
+                            "context": retriever | self._format_docs,
+                            "question": RunnablePassthrough()
+                        }
+                        | prompt
+                        | self.llm
+                        | StrOutputParser()
+                    ),
+                    "sources": retriever
+                }
+            )
+
+        # Use ainvoke for async execution
+        result = await chain_with_sources.ainvoke(question)
+
+        # Format sources
+        result["sources"] = [
+            {
+                "content": doc.page_content,
+                "metadata": doc.metadata
+            }
+            for doc in result["sources"]
+        ]
+
+        return result
+
     def stream_answer(self, question: str):
         """
         Stream answer token by token
@@ -285,8 +419,26 @@ def create_rag_service(
             temperature=llm_kwargs.get("temperature", 0.7),
             max_tokens=llm_kwargs.get("max_tokens", 1000)
         )
+    elif llm_provider == "ollama":
+        model_name = model_name or "mistral"
+        # Get Ollama base URL from environment or use default
+        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        llm = ChatOllama(
+            model=model_name,
+            base_url=base_url,
+            temperature=llm_kwargs.get("temperature", 0.7),
+            num_predict=llm_kwargs.get("max_tokens", 1000)
+        )
+    elif llm_provider == "groq":
+        model_name = model_name or "llama-3.1-70b-versatile"
+        llm = ChatGroq(
+            model=model_name,
+            groq_api_key=api_key,
+            temperature=llm_kwargs.get("temperature", 0.7),
+            max_tokens=llm_kwargs.get("max_tokens", 1000)
+        )
     else:
-        raise ValueError(f"Unsupported LLM provider: {llm_provider}")
+        raise ValueError(f"Unsupported LLM provider: {llm_provider}. Supported: openai, cohere, ollama, groq")
 
     # Initialize prompt service
     prompt_service = PromptService(language=language)

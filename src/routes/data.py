@@ -1,19 +1,20 @@
-from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
+from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request, Form, Query
 from fastapi.responses import JSONResponse
 import os
 from helpers.config import get_settings, Settings
-from helpers.auth import require_admin
+from helpers.auth import require_admin, get_current_user
 from controllers import DataController, ProjectController, ProcessController
 import aiofiles
 from models import ResponseSignal
 import logging
-from .schemes.data import ProcessRequest
+from .schemes.data import ProcessRequest, ProjectLanguageRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
 from models.AssetModel import AssetModel
 from models.db_schemes import DataChunk, Asset
 from models.enums.AssetTypeEnum import AssetTypeEnum
 from controllers import NLPController
+from typing import Optional
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -24,10 +25,15 @@ data_router = APIRouter(
 
 @data_router.post("/upload/{project_id}")
 async def upload_data(request: Request, project_id: int, file: UploadFile,
+                      language: Optional[str] = Query(None, description="Project language (fr, en, ar). Optional for manual override."),
                       app_settings: Settings = Depends(get_settings),
                       current_user: dict = Depends(require_admin)):
-        
-    
+    """
+    Upload a file to a project.
+    Language parameter is optional and can be used to manually set the project language
+    during the first upload or when the project has no files.
+    """
+
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
     )
@@ -35,6 +41,35 @@ async def upload_data(request: Request, project_id: int, file: UploadFile,
     project = await project_model.get_project_or_create_one(
         project_id=project_id
     )
+
+    # Check if we should update the language
+    asset_model = await AssetModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project_files = await asset_model.get_all_project_assets(
+        asset_project_id=project.project_id,
+        asset_type=AssetTypeEnum.FILE.value
+    )
+
+    # Update language if provided and allowed (first upload or no files)
+    if language and len(project_files) == 0:
+        # Validate language
+        valid_languages = ['fr', 'en', 'ar']
+        if language not in valid_languages:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "signal": "INVALID_LANGUAGE",
+                    "message": f"Invalid language. Must be one of: {', '.join(valid_languages)}"
+                }
+            )
+
+        # Update project language
+        project = await project_model.update_project_language(
+            project_id=project.project_id,
+            language=language
+        )
 
     # validate the file properties
     data_controller = DataController()
@@ -71,10 +106,6 @@ async def upload_data(request: Request, project_id: int, file: UploadFile,
         )
 
     # store the assets into the database
-    asset_model = await AssetModel.create_instance(
-        db_client=request.app.db_client
-    )
-
     asset_resource = Asset(
         asset_project_id=project.project_id,
         asset_type=AssetTypeEnum.FILE.value,
@@ -88,6 +119,7 @@ async def upload_data(request: Request, project_id: int, file: UploadFile,
             content={
                 "signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value,
                 "file_id": str(asset_record.asset_id),
+                "project_language": project.project_language
             }
         )
 
@@ -107,11 +139,17 @@ async def process_endpoint(request: Request, project_id: int, process_request: P
         project_id=project_id
     )
 
+    # Initialize NLPController with LangChain services
     nlp_controller = NLPController(
-        vectordb_client=request.app.vectordb_client,
-        generation_client=request.app.generation_client,
-        embedding_client=request.app.embedding_client,
-        template_parser=request.app.template_parser,
+        embeddings_service=request.app.embeddings_service,
+        prompt_service=request.app.prompt_service,
+        generation_backend=request.app.generation_backend,
+        generation_model=request.app.generation_model,
+        api_key=request.app.generation_api_key,
+        vector_db_backend=request.app.vector_db_backend,
+        vector_db_path=request.app.vector_db_path,
+        connection_string=request.app.postgres_conn_sync,
+        qdrant_url=request.app.qdrant_url
     )
 
     asset_model = await AssetModel.create_instance(
@@ -168,9 +206,8 @@ async def process_endpoint(request: Request, project_id: int, process_request: P
                     )
 
     if do_reset == 1:
-        # delete associated vectors collection
-        collection_name = nlp_controller.create_collection_name(project_id=project.project_id)
-        _ = await request.app.vectordb_client.delete_collection(collection_name=collection_name)
+        # delete associated vectors collection using NLPController
+        _ = await nlp_controller.reset_vector_db_collection(project=project)
 
         # delete associated chunks
         _ = await chunk_model.delete_chunks_by_project_id(
@@ -219,5 +256,106 @@ async def process_endpoint(request: Request, project_id: int, process_request: P
             "signal": ResponseSignal.PROCESSING_SUCCESS.value,
             "inserted_chunks": no_records,
             "processed_files": no_files
+        }
+    )
+
+@data_router.get("/project/{project_id}/language")
+async def get_project_language(request: Request, project_id: int,
+                               current_user: dict = Depends(get_current_user)):
+    """
+    Get the language of a specific project (accessible to all authenticated users)
+    Also returns the number of files to determine if language can be changed
+    """
+    project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project = await project_model.get_project_or_create_one(
+        project_id=project_id
+    )
+
+    if not project:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "signal": ResponseSignal.PROJECT_NOT_FOUND_ERROR.value
+            }
+        )
+
+    # Get file count
+    asset_model = await AssetModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project_files = await asset_model.get_all_project_assets(
+        asset_project_id=project.project_id,
+        asset_type=AssetTypeEnum.FILE.value
+    )
+
+    return JSONResponse(
+        content={
+            "signal": "PROJECT_LANGUAGE_RETRIEVED",
+            "project_id": project.project_id,
+            "language": project.project_language,
+            "file_count": len(project_files),
+            "can_change_language": len(project_files) == 0
+        }
+    )
+
+@data_router.put("/project/{project_id}/language")
+async def update_project_language(request: Request, project_id: int,
+                                 language_request: ProjectLanguageRequest,
+                                 current_user: dict = Depends(require_admin)):
+    """
+    Update the language of a specific project (admin only)
+    Language can only be changed if:
+    - The project has no files yet (first upload)
+    - OR the project has no more files
+    Supported languages: fr (French), en (English), ar (Arabic)
+    """
+    project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    # Check if project has files
+    asset_model = await AssetModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project_files = await asset_model.get_all_project_assets(
+        asset_project_id=project_id,
+        asset_type=AssetTypeEnum.FILE.value
+    )
+
+    # Language can only be changed if there are no files
+    if len(project_files) > 0:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "signal": "LANGUAGE_CHANGE_NOT_ALLOWED",
+                "message": "Cannot change language when project has files. Delete all files first."
+            }
+        )
+
+    # Update project language
+    project = await project_model.update_project_language(
+        project_id=project_id,
+        language=language_request.language
+    )
+
+    if not project:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "signal": ResponseSignal.PROJECT_NOT_FOUND_ERROR.value
+            }
+        )
+
+    return JSONResponse(
+        content={
+            "signal": "PROJECT_LANGUAGE_UPDATED",
+            "project_id": project.project_id,
+            "language": project.project_language,
+            "message": f"Project language updated to {language_request.language}"
         }
     )

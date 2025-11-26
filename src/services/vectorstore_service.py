@@ -1,7 +1,7 @@
 """
 VectorStore Service
 Unified interface for vector stores using LangChain integrations
-Supports: Qdrant, PGVector
+Supports: Qdrant
 """
 
 from typing import List, Literal, Optional
@@ -9,7 +9,6 @@ from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from langchain_core.embeddings import Embeddings
 from langchain_qdrant import QdrantVectorStore
-from langchain_postgres import PGVector
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 import os
@@ -21,7 +20,7 @@ class VectorStoreService:
     def __init__(
         self,
         embeddings: Embeddings,
-        provider: Literal["qdrant", "pgvector"] = "qdrant",
+        provider: Literal["qdrant"] = "qdrant",
         collection_name: str = "documents",
         **config
     ):
@@ -30,8 +29,8 @@ class VectorStoreService:
 
         Args:
             embeddings: LangChain embeddings instance
-            provider: Vector store provider ("qdrant" or "pgvector")
-            collection_name: Name of collection/table
+            provider: Vector store provider (only "qdrant" supported)
+            collection_name: Name of collection
             **config: Provider-specific configuration
         """
         self.embeddings = embeddings
@@ -43,10 +42,8 @@ class VectorStoreService:
         # Initialize vector store
         if provider == "qdrant":
             self.vectorstore = self._init_qdrant()
-        elif provider == "pgvector":
-            self.vectorstore = self._init_pgvector()
         else:
-            raise ValueError(f"Unsupported provider: {provider}")
+            raise ValueError(f"Unsupported provider: {provider}. Only 'qdrant' is supported.")
 
     def _init_qdrant(self) -> QdrantVectorStore:
         """
@@ -55,14 +52,11 @@ class VectorStoreService:
         Config keys:
             - path: Path to Qdrant database file (default: "assets/database")
             - url: Qdrant server URL (optional, for remote Qdrant)
-            - distance: Distance metric ("cosine" or "dot", default: "cosine")
+            - distance: Distance metric ("cosine", "dot", or "euclid", default: "cosine")
         """
         path = self.config.get("path", "assets/database")
         url = self.config.get("url")
         distance_metric = self.config.get("distance", "cosine")
-
-        # Create directory if it doesn't exist
-        os.makedirs(path, exist_ok=True)
 
         # Map distance metric
         distance_map = {
@@ -71,56 +65,59 @@ class VectorStoreService:
             "euclid": Distance.EUCLID
         }
         distance = distance_map.get(distance_metric, Distance.COSINE)
+        self._distance = distance
 
-        # Initialize Qdrant client
+        # QdrantVectorStore does NOT support async_client parameter!
+        # It uses run_in_executor internally for async operations
+        # Best practice: Use from_existing_collection() with URL
+
+        # Check if collection exists first
+        try:
+            if url:
+                temp_client = QdrantClient(url=url)
+            else:
+                os.makedirs(path, exist_ok=True)
+                temp_client = QdrantClient(path=path)
+
+            collections = temp_client.get_collections().collections
+            collection_exists = any(c.name == self.collection_name for c in collections)
+
+            if not collection_exists:
+                # Create collection if it doesn't exist
+                sample_embedding = self.embeddings.embed_query("test")
+                vector_size = len(sample_embedding)
+                temp_client.create_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=VectorParams(size=vector_size, distance=distance)
+                )
+                print(f"✓ Collection '{self.collection_name}' created (dim={vector_size}, distance={distance.name})")
+            else:
+                print(f"✓ Collection '{self.collection_name}' already exists")
+
+            temp_client.close()
+        except Exception as e:
+            print(f"Warning during collection setup: {e}")
+            import traceback
+            traceback.print_exc()
+
+        # Use from_existing_collection for better async support
         if url:
-            client = QdrantClient(url=url)
+            print(f"✓ Using QdrantVectorStore.from_existing_collection with URL: {url}")
+            vectorstore = QdrantVectorStore.from_existing_collection(
+                embedding=self.embeddings,
+                collection_name=self.collection_name,
+                url=url
+            )
         else:
-            # Local file-based storage
-            client = QdrantClient(path=path)
-
-        # Create vector store
-        vectorstore = QdrantVectorStore(
-            client=client,
-            collection_name=self.collection_name,
-            embedding=self.embeddings,
-            distance=distance
-        )
+            print(f"✓ Using QdrantVectorStore.from_existing_collection with path: {path}")
+            vectorstore = QdrantVectorStore.from_existing_collection(
+                embedding=self.embeddings,
+                collection_name=self.collection_name,
+                path=path
+            )
 
         return vectorstore
 
-    def _init_pgvector(self) -> PGVector:
-        """
-        Initialize PGVector vector store
-
-        Config keys:
-            - connection_string: PostgreSQL connection string (required)
-            - distance: Distance metric ("cosine" or "l2", default: "cosine")
-        """
-        connection_string = self.config.get("connection_string")
-        if not connection_string:
-            raise ValueError("PGVector requires 'connection_string' in config")
-
-        distance_metric = self.config.get("distance", "cosine")
-
-        # Map distance metric for pgvector
-        distance_map = {
-            "cosine": "cosine",
-            "dot": "dot",
-            "l2": "l2"
-        }
-        distance = distance_map.get(distance_metric, "cosine")
-
-        # Create vector store
-        vectorstore = PGVector(
-            collection_name=self.collection_name,
-            connection=connection_string,
-            embeddings=self.embeddings,
-            distance_strategy=distance,
-            use_jsonb=True
-        )
-
-        return vectorstore
 
     def add_documents(
         self,
@@ -132,7 +129,7 @@ class VectorStoreService:
 
         Args:
             documents: List of Document objects
-            batch_size: Batch size for adding documents
+            batch_size: Batch size for adding documents (Qdrant handles batching internally)
 
         Returns:
             List of document IDs
@@ -140,7 +137,8 @@ class VectorStoreService:
         if not documents:
             return []
 
-        # LangChain handles batching internally
+        # LangChain handles batching and indexing internally
+        # Collection is already created during __init__
         ids = self.vectorstore.add_documents(documents)
 
         return ids
@@ -195,6 +193,32 @@ class VectorStoreService:
 
         return results
 
+    async def asimilarity_search_with_score(
+        self,
+        query: str,
+        k: int = 5,
+        filter: Optional[dict] = None
+    ) -> List[tuple[Document, float]]:
+        """
+        Async search for similar documents with relevance scores
+
+        Args:
+            query: Query text
+            k: Number of results to return
+            filter: Metadata filter (optional)
+
+        Returns:
+            List of tuples (document, score)
+        """
+        # Use LangChain's native async method
+        results = await self.vectorstore.asimilarity_search_with_score(
+            query=query,
+            k=k,
+            filter=filter
+        )
+
+        return results
+
     def as_retriever(
         self,
         search_type: Literal["similarity", "mmr", "similarity_score_threshold"] = "similarity",
@@ -226,11 +250,53 @@ class VectorStoreService:
 
     def delete_collection(self):
         """Delete the entire collection"""
-        if self.provider == "qdrant":
-            self.vectorstore.client.delete_collection(self.collection_name)
-        elif self.provider == "pgvector":
-            # PGVector collection deletion
-            self.vectorstore.drop_tables()
+        self.vectorstore.client.delete_collection(self.collection_name)
+
+    def delete_by_metadata(self, filter_dict: dict) -> bool:
+        """
+        Delete vectors by metadata filter
+
+        Args:
+            filter_dict: Filter dictionary (e.g., {"chunk_id": 123} or {"chunk_id": {"$in": [1,2,3]}})
+
+        Returns:
+            True if successful
+        """
+        try:
+            from qdrant_client.models import Filter, FieldCondition, MatchAny, MatchValue
+
+            # Build Qdrant filter
+            conditions = []
+            for key, value in filter_dict.items():
+                if isinstance(value, dict) and "$in" in value:
+                    # Handle $in operator for multiple values
+                    conditions.append(
+                        FieldCondition(
+                            key=key,
+                            match=MatchAny(any=value["$in"])
+                        )
+                    )
+                else:
+                    # Handle single value
+                    conditions.append(
+                        FieldCondition(
+                            key=key,
+                            match=MatchValue(value=value)
+                        )
+                    )
+
+            filter_obj = Filter(must=conditions)
+
+            # Delete points matching the filter
+            self.vectorstore.client.delete(
+                collection_name=self.collection_name,
+                points_selector=filter_obj
+            )
+
+            return True
+        except Exception as e:
+            print(f"Error deleting vectors by metadata: {e}")
+            return False
 
     def get_stats(self) -> dict:
         """Get vector store statistics"""
@@ -240,14 +306,13 @@ class VectorStoreService:
             "embedding_dimension": getattr(self.embeddings, "embedding_dimension", "unknown")
         }
 
-        # Provider-specific stats
-        if self.provider == "qdrant":
-            try:
-                collection_info = self.vectorstore.client.get_collection(self.collection_name)
-                stats["vectors_count"] = collection_info.vectors_count
-                stats["points_count"] = collection_info.points_count
-            except:
-                stats["vectors_count"] = "unknown"
+        # Qdrant-specific stats
+        try:
+            collection_info = self.vectorstore.client.get_collection(self.collection_name)
+            stats["vectors_count"] = collection_info.vectors_count
+            stats["points_count"] = collection_info.points_count
+        except:
+            stats["vectors_count"] = "unknown"
 
         return stats
 

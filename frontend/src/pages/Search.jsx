@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { nlpAPI } from '../services/api';
 import Navbar from '../components/Navbar';
+import ProjectLanguage from '../components/ProjectLanguage';
+import { useAuth } from '../context/AuthContext';
 
 const Search = () => {
   const [projectId, setProjectId] = useState('1');
@@ -9,6 +11,7 @@ const Search = () => {
   const [searching, setSearching] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [results, setResults] = useState([]);
+  const { user } = useAuth();
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -74,6 +77,19 @@ const Search = () => {
                   required
                 />
               </div>
+
+              {/* Project Language Display */}
+              {projectId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Langue du Projet
+                  </label>
+                  <ProjectLanguage
+                    projectId={projectId}
+                    isAdmin={user?.role === 'admin'}
+                  />
+                </div>
+              )}
 
               {/* Search Text Input */}
               <div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { nlpAPI } from '../services/api';
 import Navbar from '../components/Navbar';
+import ProjectLanguage from '../components/ProjectLanguage';
+import { useAuth } from '../context/AuthContext';
 
 const IndexPage = () => {
   const [projectId, setProjectId] = useState('1');
@@ -9,6 +11,7 @@ const IndexPage = () => {
   const [loadingInfo, setLoadingInfo] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [collectionInfo, setCollectionInfo] = useState(null);
+  const { user } = useAuth();
 
   const handleIndex = async (e) => {
     e.preventDefault();
@@ -94,6 +97,19 @@ const IndexPage = () => {
                 />
               </div>
 
+              {/* Project Language Display */}
+              {projectId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Langue du Projet
+                  </label>
+                  <ProjectLanguage
+                    projectId={projectId}
+                    isAdmin={user?.role === 'admin'}
+                  />
+                </div>
+              )}
+
               {/* Reset Checkbox */}
               <div className="flex items-center">
                 <input
@@ -174,7 +190,9 @@ const IndexPage = () => {
                 <div className="bg-green-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-600 mb-1">Nombre de Vecteurs</h3>
                   <p className="text-xl font-bold text-gray-800">
-                    {collectionInfo.vectors_count !== undefined ? collectionInfo.vectors_count.toLocaleString() : 'N/A'}
+                    {(collectionInfo.vectors_count !== undefined && collectionInfo.vectors_count !== null && typeof collectionInfo.vectors_count === 'number')
+                      ? collectionInfo.vectors_count.toLocaleString()
+                      : (collectionInfo.vectors_count || 'N/A')}
                   </p>
                 </div>
 
@@ -191,12 +209,14 @@ const IndexPage = () => {
                 </div>
               </div>
 
-              {collectionInfo.indexed_vectors_count !== undefined && (
+              {collectionInfo.indexed_vectors_count !== undefined && collectionInfo.indexed_vectors_count !== null && (
                 <div className="mt-6 bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Vecteurs Indexés</span>
                     <span className="text-lg font-bold text-gray-800">
-                      {collectionInfo.indexed_vectors_count.toLocaleString()}
+                      {typeof collectionInfo.indexed_vectors_count === 'number'
+                        ? collectionInfo.indexed_vectors_count.toLocaleString()
+                        : collectionInfo.indexed_vectors_count}
                     </span>
                   </div>
                 </div>

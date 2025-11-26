@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { dataAPI } from '../services/api';
 import Navbar from '../components/Navbar';
+import ProjectLanguage from '../components/ProjectLanguage';
+import { useAuth } from '../context/AuthContext';
 
 const Process = () => {
   const [projectId, setProjectId] = useState('1');
@@ -10,6 +12,7 @@ const Process = () => {
   const [doReset, setDoReset] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const { user } = useAuth();
 
   const handleProcess = async (e) => {
     e.preventDefault();
@@ -75,6 +78,19 @@ const Process = () => {
                   required
                 />
               </div>
+
+              {/* Project Language Display */}
+              {projectId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Langue du Projet
+                  </label>
+                  <ProjectLanguage
+                    projectId={projectId}
+                    isAdmin={user?.role === 'admin'}
+                  />
+                </div>
+              )}
 
               {/* File ID Input (Optional) */}
               <div>

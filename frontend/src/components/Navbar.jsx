@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -29,6 +30,16 @@ const Navbar = () => {
     { path: '/users', label: 'Gestion Utilisateurs' },
   ];
 
+  // Menu de gestion admin
+  const adminManagementItems = [
+    { path: '/admin/projects', label: 'Projets' },
+    { path: '/admin/assets', label: 'Fichiers' },
+    { path: '/admin/chunks', label: 'Chunks' },
+    { path: '/admin/conversations', label: 'Conversations' },
+    { path: '/admin/messages', label: 'Messages' },
+    { path: '/admin/vectors', label: 'Collections' },
+  ];
+
   const menuItems = isAdmin() ? adminMenuItems : userMenuItems;
 
   return (
@@ -43,7 +54,7 @@ const Navbar = () => {
           </div>
 
           {/* Menu Items */}
-          <div className="hidden md:flex space-x-1">
+          <div className="hidden md:flex space-x-1 items-center">
             {menuItems.map((item) => (
               <Link
                 key={item.path}
@@ -53,6 +64,41 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
+
+            {/* Admin Dropdown */}
+            {isAdmin() && (
+              <div className="relative">
+                <button
+                  onClick={() => setAdminDropdownOpen(!adminDropdownOpen)}
+                  className="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200 flex items-center"
+                >
+                  Gestion Admin
+                  <svg
+                    className={`ml-1 h-4 w-4 transition-transform ${adminDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {adminDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    {adminManagementItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setAdminDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* User Info & Logout */}
@@ -88,6 +134,24 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
+
+            {/* Admin Management Mobile */}
+            {isAdmin() && (
+              <>
+                <div className="px-4 py-2 text-sm font-semibold border-t border-white border-opacity-20 mt-2 pt-2">
+                  Gestion Admin
+                </div>
+                {adminManagementItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="px-4 py-2 pl-8 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200 text-sm"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>

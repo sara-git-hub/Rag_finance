@@ -152,15 +152,3 @@ class TestVectorStoreServiceErrors:
                 provider="invalid_provider",
                 collection_name="test"
             )
-
-    def test_pgvector_without_connection_string(self):
-        """Test PGVector without connection string"""
-        embeddings = EmbeddingsService(provider="local", model_name="multilingual-mini")
-
-        with pytest.raises(ValueError, match="connection_string"):
-            VectorStoreService(
-                embeddings=embeddings.embeddings,
-                provider="pgvector",
-                collection_name="test"
-                # Missing connection_string
-            )
