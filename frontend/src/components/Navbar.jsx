@@ -17,6 +17,7 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/search', label: 'Recherche' },
     { path: '/qa', label: 'Questions/Réponses' },
+    { path: '/exchange-rates', label: 'Taux de Change' },
   ];
 
   // Menu pour les administrateurs (toutes les fonctionnalités)
@@ -27,6 +28,7 @@ const Navbar = () => {
     { path: '/index', label: 'Indexation' },
     { path: '/search', label: 'Recherche' },
     { path: '/qa', label: 'Questions/Réponses' },
+    { path: '/exchange-rates', label: 'Taux de Change' },
     { path: '/users', label: 'Gestion Utilisateurs' },
   ];
 
@@ -38,6 +40,7 @@ const Navbar = () => {
     { path: '/admin/conversations', label: 'Conversations' },
     { path: '/admin/messages', label: 'Messages' },
     { path: '/admin/vectors', label: 'Collections' },
+    { path: '/admin/exchange-rates', label: 'Gestion Taux de Change' },
   ];
 
   const menuItems = isAdmin() ? adminMenuItems : userMenuItems;

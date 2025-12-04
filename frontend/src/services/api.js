@@ -134,6 +134,26 @@ export const adminAPI = {
     api.get(`/admin/vectors/collections/${collectionName}?page=${page}&page_size=${pageSize}`),
   deleteCollection: (collectionName) =>
     api.delete(`/admin/vectors/collections/${collectionName}`),
+
+  // Exchange Rates Admin
+  getSchedulerStatus: () =>
+    api.get('/exchange-rates/admin/scheduler/status'),
+  fetchRatesNow: () =>
+    api.post('/exchange-rates/admin/fetch-rates-now'),
+  trainExchangeModel: (currencyPair, daysHistory) =>
+    api.post(`/exchange-rates/admin/train-model?currency_pair=${currencyPair}&days_history=${daysHistory}`),
+  generatePredictions: (currencyPair, daysAhead) =>
+    api.post(`/exchange-rates/admin/generate-predictions?currency_pair=${currencyPair}&days_ahead=${daysAhead}`),
+};
+
+export const publicAPI = {
+  // Exchange Rates Public (for authenticated users)
+  getLatestExchangeRates: () =>
+    api.get('/exchange-rates/latest'),
+  getExchangePredictions: (currencyPair, daysHistory = 30, daysAhead = 7) =>
+    api.get(`/exchange-rates/predictions?currency_pair=${encodeURIComponent(currencyPair)}&days_history=${daysHistory}&days_ahead=${daysAhead}`),
+  getExchangeHistory: (currencyPair, days = 365) =>
+    api.get(`/exchange-rates/history?currency_pair=${encodeURIComponent(currencyPair)}&days=${days}`),
 };
 
 export default api;

@@ -1,0 +1,28 @@
+📁 STRUCTURE DE LA DOCUMENTATION
+================================
+
+fil_rouge/
+├── DOCUMENTATION.md (19KB)          📄 FICHIER PRINCIPAL DE SYNTHÈSE
+│   └── Vue d'ensemble + résumé des 6 phases
+│
+├── README.md (existant)             📄 Guide d'installation original
+│
+└── docs/
+    ├── README.md                    📄 Index de la documentation
+    ├── STRUCTURE.txt                📄 Ce fichier
+    │
+    ├── phases/                      📂 ANALYSES DÉTAILLÉES
+    │   ├── 01_ARCHITECTURE_GLOBALE.md (23KB) ✅ COMPLÉTÉE
+    │   ├── 02_BACKEND_ANALYSIS.md             🚧 À compléter
+    │   ├── 03_FRONTEND_ANALYSIS.md            🚧 À compléter
+    │   ├── 04_CODE_CLEANUP.md                 🚧 À compléter
+    │   ├── 05_DATA_FLOWS.md                   🚧 À compléter
+    │   └── 06_RECOMMENDATIONS.md              🚧 À compléter
+    │
+    ├── API_REFERENCE.md             📄 Référence API complète
+    ├── DEPLOYMENT_GUIDE.md          📄 Guide de déploiement
+    └── TROUBLESHOOTING.md           📄 Résolution de problèmes
+
+TOTAL : 11 fichiers créés
+TAILLE : ~42KB de documentation
+PROGRESSION : Phase 1/6 complétée (10%)

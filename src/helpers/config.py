@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 from typing import List, Optional
 
 class Settings(BaseSettings):
@@ -6,7 +6,6 @@ class Settings(BaseSettings):
     APP_NAME: str
     APP_VERSION: str
     SECRET_KEY: str
-    OPENAI_API_KEY: str
 
     FILE_ALLOWED_TYPES : list
     FILE_MAX_SIZE : int
@@ -20,10 +19,6 @@ class Settings(BaseSettings):
 
     CLE_API_CHANGES: str
     CLE_API_CHANGES_2: str
-    CLE_API_BDT: str
-    CLE_API_BDT_2: str
-    CLE_API_OBLIG: str
-    CLE_API_OBLIG_2: str
 
     GENERATION_BACKEND: str
     EMBEDDING_BACKEND: str
@@ -39,9 +34,9 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL_ID: Optional[str] = None
     EMBEDDING_MODEL_SIZE: Optional[int] = None
     EMBEDDING_DEVICE: Optional[str] = None
-    INPUT_DAFAULT_MAX_CHARACTERS: Optional[int] = None
-    GENERATION_DAFAULT_MAX_TOKENS: Optional[int] = None
-    GENERATION_DAFAULT_TEMPERATURE: Optional[float] = None
+    INPUT_DEFAULT_MAX_CHARACTERS: Optional[int] = None
+    GENERATION_DEFAULT_MAX_TOKENS: Optional[int] = None
+    GENERATION_DEFAULT_TEMPERATURE: Optional[float] = None
 
     VECTOR_DB_BACKEND_LITERAL: Optional[List[str]] = None
     VECTOR_DB_BACKEND : str

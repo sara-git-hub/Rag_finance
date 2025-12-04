@@ -10,10 +10,6 @@ FILE_DEFAULT_CHUNK_SIZE= 512000 # 512 kb
 #BAM API KEYS
 CLE_API_CHANGES=
 CLE_API_CHANGES_2=
-CLE_API_BDT=
-CLE_API_BDT_2=
-CLE_API_OBLIG=
-CLE_API_OBLIG_2=
 
 #POSTGRES
 POSTGRES_USERNAME=
@@ -49,9 +45,9 @@ GENERATION_MODEL_ID=gemma2:2b
 GENERATION_MODEL_ID_LITERAL = ["gpt-3.5-turbo-0125","gpt-4o-mini","command-r","command-r-plus","mistral","llama3.1","gemma2:9b"]
 
 # Paramètres de génération
-GENERATION_DAFAULT_MAX_TOKENS=1000
-GENERATION_DAFAULT_TEMPERATURE=0.7
-INPUT_DAFAULT_MAX_CHARACTERS=1024
+GENERATION_DEFAULT_MAX_TOKENS=1000
+GENERATION_DEFAULT_TEMPERATURE=0.7
+INPUT_DEFAULT_MAX_CHARACTERS=1024
 
 # ========================= Embeddings Config =========================
 # 🎯 CHOISISSEZ : "local" (gratuit), "openai", ou "cohere"
@@ -85,6 +81,7 @@ SECRET_KEY=
 #   3. Choisir un modèle : GENERATION_MODEL_ID=gpt-3.5-turbo-0125
 #
 # Pour utiliser Cohere :
+## Pour utiliser Groq (Rapide et Gratuit) :#   1. Mettre GENERATION_BACKEND=groq#   2. Obtenir une clé API sur https://console.groq.com/keys#   3. Mettre votre clé dans GROQ_API_KEY#   4. Choisir un modèle : GENERATION_MODEL_ID=llama-3.1-70b-versatile#   Modèles disponibles : llama-3.1-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768
 #   1. Mettre GENERATION_BACKEND=cohere
 #   2. Mettre votre clé dans COHERE_API_KEY
 #   3. Choisir un modèle : GENERATION_MODEL_ID=command-r

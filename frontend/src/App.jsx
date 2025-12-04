@@ -17,6 +17,8 @@ import AdminChunks from './pages/admin/AdminChunks';
 import AdminConversations from './pages/admin/AdminConversations';
 import AdminMessages from './pages/admin/AdminMessages';
 import AdminVectors from './pages/admin/AdminVectors';
+import AdminExchangeRates from './pages/admin/AdminExchangeRates';
+import ExchangeRates from './pages/ExchangeRates';
 
 function App() {
   return (
@@ -88,6 +90,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/exchange-rates"
+            element={
+              <ProtectedRoute>
+                <ExchangeRates />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin management routes */}
           <Route
@@ -135,6 +145,14 @@ function App() {
             element={
               <ProtectedRoute requireAdmin>
                 <AdminVectors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/exchange-rates"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminExchangeRates />
               </ProtectedRoute>
             }
           />

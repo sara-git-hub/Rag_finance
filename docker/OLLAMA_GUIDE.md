@@ -154,7 +154,7 @@ GENERATION_MODEL_ID=phi3
 **2. Réduire la longueur des réponses**
 ```bash
 # .env.app
-GENERATION_DAFAULT_MAX_TOKENS=500  # au lieu de 1000
+GENERATION_DEFAULT_MAX_TOKENS=500  # au lieu de 1000
 ```
 
 **3. Augmenter la RAM Docker**
@@ -230,7 +230,7 @@ docker stats ollama
 
 **Solutions** :
 - Modèle plus léger (phi3)
-- Réduire `GENERATION_DAFAULT_MAX_TOKENS`
+- Réduire `GENERATION_DEFAULT_MAX_TOKENS`
 - Allouer plus de CPU à Docker
 
 ---

@@ -35,6 +35,8 @@ services:
       - ../src/services:/app/services:ro
       - ../src/routes:/app/routes:ro
       - ../src/helpers:/app/helpers:ro
+      - ../src/exchange_rates:/app/exchange_rates:ro
+      - ../src/models:/app/models:ro
       - ../src/main.py:/app/main.py:ro
     networks:
       - backend
