@@ -33,6 +33,9 @@ assets/database/
 *.tmp
 *.temp
 
+# Frontend
+node_modules/
+
 # Documentation files (optional - décommentez si besoin)
 # *.docx
 # *.pdf
