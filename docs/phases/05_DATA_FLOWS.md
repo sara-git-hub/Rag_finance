@@ -1018,6 +1018,47 @@ Frontend    FastAPI    AdminRouter    ProjectModel    AssetModel    ChunkModel  
 4. Files (Filesystem)
 5. Project (PostgreSQL)
 
+#### Update (Modification Nom de Projet)
+
+```
+Frontend    FastAPI    AdminRouter    ProjectModel    PostgreSQL
+   │            │            │              │              │
+   │ PATCH /admin/projects/{id}/name        │              │
+   │ Body: {project_name: "Nouveau Nom"}   │              │
+   │───────────>│            │              │              │
+   │            │            │              │              │
+   │            │ Check auth (admin)        │              │
+   │            │            │              │              │
+   │            │ Validate   │              │              │
+   │            │───────────>│              │              │
+   │            │            │              │              │
+   │            │            │ UPDATE       │              │
+   │            │            │──────────────>│              │
+   │            │            │              │              │
+   │            │            │              │ UPDATE       │
+   │            │            │              │ projects     │
+   │            │            │              │ SET          │
+   │            │            │              │ project_name │
+   │            │            │              │ WHERE id     │
+   │            │            │              │──────────────>│
+   │            │            │              │              │
+   │            │            │              │ 1 row        │
+   │            │            │              │<──────────────│
+   │            │            │              │              │
+   │            │            │ project      │              │
+   │            │            │<──────────────│              │
+   │            │            │              │              │
+   │            │ Response   │              │              │
+   │            │ {signal, project_id, project_name}      │
+   │<───────────│            │              │              │
+```
+
+**Fonctionnalités** :
+- Modification simple d'un champ (PATCH)
+- Validation côté backend (project_name non vide)
+- Retour immédiat du nom mis à jour
+- Accessible uniquement aux admins
+
 ---
 
 ## 5. Flux Monitoring

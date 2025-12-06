@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useConversation } from '../hooks/useConversation';
 import Navbar from '../components/Navbar';
+import ProjectName from '../components/ProjectName';
 import ProjectLanguage from '../components/ProjectLanguage';
 import { useAuth } from '../context/AuthContext';
 
 const QA = () => {
-  const [projectId, setProjectId] = useState('4');
+  const [projectId, setProjectId] = useState('1');
   const [question, setQuestion] = useState('');
   const [limit] = useState(5);
   const [showSidebar, setShowSidebar] = useState(true);
@@ -104,6 +105,16 @@ const QA = () => {
                     placeholder="Entrez l'ID du projet"
                     min="1"
                   />
+
+                  {/* Project Name Display */}
+                  {projectId && (
+                    <div className="pt-1">
+                      <label className="block text-xs font-medium text-blue-100 mb-1">
+                        Nom du Projet
+                      </label>
+                      <ProjectName projectId={projectId} />
+                    </div>
+                  )}
 
                   {/* Project Language Display */}
                   {projectId && (

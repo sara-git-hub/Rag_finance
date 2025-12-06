@@ -11,7 +11,7 @@
 **Frontend React 18 complet analysé** :
 - **19 routes** (2 publiques, 4 utilisateur, 13 admin)
 - **17 pages** (Login, Register, Dashboard, etc.)
-- **5 composants réutilisables**
+- **6 composants réutilisables**
 - **1 service API centralisé** (api.js avec interceptors Axios)
 - **1 Context** (AuthContext avec JWT)
 - **1 Hook personnalisé** (useConversation pour RAG)
@@ -49,9 +49,10 @@ frontend/src/
 │       ├── AdminVectors.jsx
 │       └── AdminExchangeRates.jsx
 │
-├── components/                 # 5 composants réutilisables
+├── components/                 # 6 composants réutilisables
 │   ├── ProtectedRoute.jsx     # HOC pour protection routes
 │   ├── Navbar.jsx             # Menu navigation
+│   ├── ProjectName.jsx        # Affichage nom projet
 │   ├── ProjectLanguage.jsx    # Sélecteur langue (FR/EN/AR)
 │   └── admin/
 │       ├── AdminTable.jsx     # Table CRUD réutilisable
@@ -469,7 +470,7 @@ const QA = () => {
 
 ---
 
-## 6. Composants Réutilisables (5)
+## 6. Composants Réutilisables (6)
 
 ### 6.1 Navbar - Menu Navigation
 
@@ -538,7 +539,27 @@ const adminMenuItems = [
 </ProtectedRoute>
 ```
 
-### 6.3 ProjectLanguage - Sélecteur Langue
+### 6.3 ProjectName - Affichage Nom Projet
+
+**Responsabilités** :
+- Afficher le nom du projet (ou "(Sans nom)" si vide)
+- Fetch automatique depuis backend
+- Mise à jour automatique lors du changement d'ID
+
+**Props** :
+- `projectId` : ID du projet
+
+**Comportement** :
+- Appelle `GET /data/project/{id}/language` pour récupérer le nom
+- Affiche un badge gris avec le nom du projet
+- Loading state pendant le chargement
+
+**Usage** :
+```jsx
+<ProjectName projectId={projectId} />
+```
+
+### 6.4 ProjectLanguage - Sélecteur Langue
 
 **Responsabilités** :
 - Afficher langue actuelle du projet (FR/EN/AR)
@@ -563,7 +584,7 @@ const languages = {
 };
 ```
 
-### 6.4 AdminTable - Table CRUD Réutilisable
+### 6.5 AdminTable - Table CRUD Réutilisable
 
 **Composant générique** pour toutes les pages admin CRUD.
 
@@ -593,6 +614,8 @@ const languages = {
 - **Table responsive** : Colonnes configurables
 - **Pagination** : Précédent/Suivant + indicateur page
 - **Filtres dynamiques** : Input text, number, select
+- **Actions** : Boutons Modifier (optionnel) et Suppression par ligne
+- **Edition** : Callback `onEdit()` optionnel pour modifier un élément
 - **Suppression** : Bouton par ligne → Modal confirmation
 - **Refresh** : Bouton actualiser
 - **Rendu custom** : `column.render()` pour formater cellules
@@ -604,20 +627,22 @@ const languages = {
   title="Gestion des Projets"
   columns={[
     { key: 'project_id', label: 'ID' },
-    { key: 'language', label: 'Langue' },
+    { key: 'project_name', label: 'Nom', render: (val) => val || '(Sans nom)' },
+    { key: 'project_language', label: 'Langue' },
     { key: 'created_at', label: 'Date', render: (val) => new Date(val).toLocaleDateString() }
   ]}
   data={projects}
   currentPage={currentPage}
   totalPages={totalPages}
   onPageChange={setCurrentPage}
+  onEdit={(item) => openEditModal(item)}
   onDelete={(item) => adminAPI.deleteProject(item.project_id)}
   onRefresh={loadProjects}
   loading={loading}
 />
 ```
 
-### 6.5 ConfirmModal - Modal Confirmation
+### 6.6 ConfirmModal - Modal Confirmation
 
 **Modal générique** pour confirmer suppressions.
 
@@ -1090,7 +1115,7 @@ if (file.size > 100 * 1024 * 1024) return alert('Max 100MB');
 
 - **Total lignes** : ~2828 lignes (JS + JSX)
 - **Pages** : 17 fichiers
-- **Composants** : 5 fichiers
+- **Composants** : 6 fichiers
 - **Services** : 1 fichier (api.js)
 - **Context** : 1 fichier (AuthContext)
 - **Hooks** : 1 fichier (useConversation)
@@ -1169,7 +1194,7 @@ if (file.size > 100 * 1024 * 1024) return alert('Max 100MB');
 **Total analysé** :
 - 19 routes (2 publiques, 4 user, 13 admin)
 - 17 pages React
-- 5 composants réutilisables
+- 6 composants réutilisables
 - 1 service API (44 fonctions)
 - 1 Context (AuthContext)
 - 1 Hook (useConversation)

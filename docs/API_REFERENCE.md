@@ -1,6 +1,6 @@
 # 🔌 API Reference - Projet Fil Rouge
 
-> Référence complète des 37 endpoints de l'API FastAPI
+> Référence complète des 39 endpoints de l'API FastAPI
 > **Base URL** : `http://localhost:8000` (développement) ou votre domaine en production
 > **Dernière mise à jour** : Décembre 2025
 
@@ -9,13 +9,13 @@
 ## 📋 Table des matières
 
 1. [Vue d'ensemble](#vue-densemble)
-2. [Authentication](#authentication) - 4 endpoints
-3. [Data Management](#data-management) - 4 endpoints
-4. [NLP / RAG](#nlp--rag) - 4 endpoints
-5. [Conversations](#conversations) - 4 endpoints
-6. [Exchange Rates](#exchange-rates) - 7 endpoints
-7. [Admin](#admin) - 13 endpoints
-8. [Monitoring](#monitoring) - 1 endpoint
+2. [Base](#base) - 1 endpoint
+3. [Authentication](#authentication) - 4 endpoints
+4. [Data Management](#data-management) - 4 endpoints
+5. [NLP / RAG](#nlp--rag) - 4 endpoints
+6. [Conversations](#conversations) - 4 endpoints
+7. [Exchange Rates](#exchange-rates) - 7 endpoints
+8. [Admin](#admin) - 15 endpoints
 9. [Codes d'erreur](#codes-derreur)
 
 ---
@@ -65,6 +65,25 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..." \
 |------|-------------|----------------------|
 | **admin** | Administrateur (1er utilisateur inscrit) | Tous les endpoints |
 | **user** | Utilisateur standard | Consultation + Q&A RAG |
+
+---
+
+## Base
+
+### 0. API Info
+
+**Endpoint** : `GET /api/v1/`
+**Auth** : Public (aucune authentification requise)
+**Description** : Retourne les informations de base sur l'API.
+
+**Response (200 OK)** :
+```json
+{
+  "app_name": "RAG Finance API",
+  "app_version": "1.0",
+  "message": "Bienvenue dans l'API de rag_finance!"
+}
+```
 
 ---
 
@@ -158,7 +177,6 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..." \
 **Endpoint** : `GET /api/v1/auth/users`
 **Auth** : Admin only
 **Description** : Liste tous les utilisateurs (admin uniquement).
-
 **Response (200 OK)** :
 ```json
 [
@@ -275,15 +293,25 @@ curl -X POST \
 
 **Endpoint** : `GET /api/v1/data/project/{project_id}/language`
 **Auth** : User
-**Description** : Récupère la langue configurée pour un projet.
+**Description** : Récupère la langue configurée pour un projet ainsi que son nom.
 
 **Response (200 OK)** :
 ```json
 {
+  "signal": "PROJECT_LANGUAGE_RETRIEVED",
   "project_id": 1,
-  "language": "fr"
+  "project_name": "Project Alpha",
+  "language": "fr",
+  "file_count": 5,
+  "can_change_language": false
 }
 ```
+
+**Fields** :
+- `project_name` (string) : Nom du projet
+- `language` (string) : Langue du projet (fr, en, ar)
+- `file_count` (int) : Nombre de fichiers dans le projet
+- `can_change_language` (bool) : Indique si la langue peut être modifiée (seulement si aucun fichier)
 
 ---
 
@@ -856,6 +884,31 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 }
 ```
 
+---
+
+#### Get Project by ID
+
+**Endpoint** : `GET /api/v1/admin/projects/{project_id}`
+**Auth** : Admin only
+**Description** : Récupère les détails d'un projet spécifique.
+
+**Response (200 OK)** :
+```json
+{
+  "signal": "PROJECT_RETRIEVED",
+  "project": {
+    "project_id": 1,
+    "project_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "project_name": "Project Alpha",
+    "project_language": "fr",
+    "created_at": "2025-11-01T10:00:00",
+    "updated_at": "2025-12-01T14:30:00"
+  }
+}
+```
+
+---
+
 #### Delete Project
 
 **Endpoint** : `DELETE /api/v1/admin/projects/{project_id}`
@@ -873,23 +926,57 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ---
 
+#### Update Project Name
+
+**Endpoint** : `PATCH /api/v1/admin/projects/{project_id}/name`
+**Auth** : Admin only
+**Description** : Modifie le nom d'un projet.
+
+**Request Body** :
+```json
+{
+  "project_name": "Nouveau nom du projet"
+}
+```
+
+**Response (200 OK)** :
+```json
+{
+  "signal": "PROJECT_NAME_UPDATED",
+  "project": {
+    "project_id": 1,
+    "project_name": "Nouveau nom du projet",
+    "project_language": "fr",
+    "updated_at": "2025-12-06T23:45:00"
+  }
+}
+```
+
+**Errors** :
+- `400 Bad Request` : project_name manquant
+- `404 Not Found` : Projet inexistant
+
+---
+
 ### Admin Endpoints Complets
 
 | # | Endpoint | Method | Description |
 |---|----------|--------|-------------|
 | 24 | `/admin/projects` | GET | Liste projets (pagination) |
-| 25 | `/admin/projects/{id}` | DELETE | Supprime projet (cascade) |
-| 26 | `/admin/assets` | GET | Liste assets (filtres: project_id, type) |
-| 27 | `/admin/assets/{id}` | DELETE | Supprime asset + fichier |
-| 28 | `/admin/chunks` | GET | Liste chunks (filtres: project_id, asset_id) |
-| 29 | `/admin/chunks/{id}` | DELETE | Supprime chunk |
-| 30 | `/admin/conversations` | GET | Liste conversations (filtre: project_id) |
-| 31 | `/admin/conversations/{id}` | DELETE | Supprime conversation + messages |
-| 32 | `/admin/messages` | GET | Liste messages (filtre: conversation_id) |
-| 33 | `/admin/messages/{id}` | DELETE | Supprime message |
-| 34 | `/admin/vectors/{project_id}` | GET | Stats collection Qdrant |
-| 35 | `/admin/vectors/{project_id}` | DELETE | Supprime collection Qdrant |
-| 36 | `/admin/exchange-rates` | GET | Liste taux (filtres: date range, pair) |
+| 25 | `/admin/projects/{id}` | GET | Récupère un projet par ID |
+| 26 | `/admin/projects/{id}` | DELETE | Supprime projet (cascade) |
+| 27 | `/admin/projects/{id}/name` | PATCH | Modifie le nom d'un projet |
+| 28 | `/admin/assets` | GET | Liste assets (filtres: project_id, type) |
+| 29 | `/admin/assets/{id}` | DELETE | Supprime asset + fichier |
+| 30 | `/admin/chunks` | GET | Liste chunks (filtres: project_id, asset_id) |
+| 31 | `/admin/chunks/{id}` | DELETE | Supprime chunk |
+| 32 | `/admin/conversations` | GET | Liste conversations (filtre: project_id) |
+| 33 | `/admin/conversations/{id}` | DELETE | Supprime conversation + messages |
+| 34 | `/admin/messages` | GET | Liste messages (filtre: conversation_id) |
+| 35 | `/admin/messages/{id}` | DELETE | Supprime message |
+| 36 | `/admin/vectors/collections` | GET | Liste toutes les collections Qdrant |
+| 37 | `/admin/vectors/collections/{collection_name}` | GET | Stats d'une collection Qdrant |
+| 38 | `/admin/vectors/collections/{collection_name}` | DELETE | Supprime une collection Qdrant |
 
 **Filtres communs** :
 - `page` (int) : Numéro de page
@@ -1088,13 +1175,14 @@ curl -X GET "http://localhost:8000/api/v1/conversations/$CONV_ID/messages" \
 ## Changelog API
 
 ### Version 1.0 (Décembre 2025)
-- ✅ 37 endpoints documentés
+- ✅ 39 endpoints documentés
 - ✅ Authentication JWT (24h expiration)
 - ✅ RAG pipeline complet (Qdrant + Ollama)
 - ✅ Exchange Rates ML (LSTM predictions)
-- ✅ Admin CRUD (7 entities)
+- ✅ Admin CRUD (7 entities + gestion projets)
 - ✅ Conversations with history
 - ✅ Prometheus monitoring
+- ✅ Project management (name, language)
 
 ---
 

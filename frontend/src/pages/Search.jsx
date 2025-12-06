@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { nlpAPI } from '../services/api';
 import Navbar from '../components/Navbar';
+import ProjectName from '../components/ProjectName';
 import ProjectLanguage from '../components/ProjectLanguage';
 import { useAuth } from '../context/AuthContext';
 
@@ -77,6 +78,16 @@ const Search = () => {
                   required
                 />
               </div>
+
+              {/* Project Name Display */}
+              {projectId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nom du Projet
+                  </label>
+                  <ProjectName projectId={projectId} />
+                </div>
+              )}
 
               {/* Project Language Display */}
               {projectId && (

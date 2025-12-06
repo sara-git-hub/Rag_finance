@@ -9,7 +9,7 @@
 ## 📋 Synthèse Globale
 
 **Backend FastAPI complet analysé** :
-- **37 endpoints** répartis sur 7 routers
+- **39 endpoints** répartis sur 7 routers
 - **5 contrôleurs** (~714 lignes de code)
 - **5 services LangChain** (~1252 lignes)
 - **7 tables PostgreSQL** avec relations
@@ -18,7 +18,7 @@
 
 ---
 
-## 1. Routes & Endpoints (37 endpoints)
+## 1. Routes & Endpoints (39 endpoints)
 
 ### Vue d'ensemble
 
@@ -29,7 +29,7 @@
 | Data | `data.py` | 4 | Admin | Upload & Processing PDF |
 | Conversation | `conversation.py` | 4 | User | Historique chat |
 | NLP | `nlp.py` | 4 | Mixed | **Pipeline RAG complet** |
-| Admin | `admin.py` | 13 | Admin | CRUD toutes entités |
+| Admin | `admin.py` | 15 | Admin | CRUD toutes entités |
 | Exchange | `exchange_routes.py` | 7 | Mixed | Prédictions ML |
 
 ### 1.1 Auth Router - Authentification JWT
@@ -57,7 +57,7 @@
 |----------|---------|-------------|
 | `/api/v1/data/upload/{project_id}` | POST (Admin) | Upload PDFs (max 100MB) |
 | `/api/v1/data/process/{project_id}` | POST (Admin) | Process PDFs → chunks |
-| `/api/v1/data/project/{id}/language` | GET (User) | Récupérer langue projet |
+| `/api/v1/data/project/{id}/language` | GET (User) | Récupérer langue + nom projet |
 | `/api/v1/data/project/{id}/language` | PUT (Admin) | Modifier langue (FR/EN/AR) |
 
 **Paramètres processing** :
@@ -99,15 +99,19 @@ answer, sources = await nlp_controller.aanswer_rag_question(
 
 ### 1.4 Admin Router - CRUD Complet
 
-**13 endpoints** pour gérer toutes les entités (admin only).
+**15 endpoints** pour gérer toutes les entités (admin only).
 
 **Entités gérées** :
-- Projects (2 endpoints) : Liste, Suppression
+- Projects (4 endpoints) : Liste, Récupérer un projet, Modifier nom, Suppression
 - Assets (2 endpoints) : Liste par projet, Suppression
 - Chunks (2 endpoints) : Liste par projet, Suppression
 - Conversations (2 endpoints) : Liste toutes, Suppression
 - Messages (2 endpoints) : Liste par conversation, Suppression
 - Vectors (3 endpoints) : Liste, Suppression par projet, Suppression collection
+
+**Nouveaux endpoints projects** :
+- `GET /admin/projects/{id}` : Récupérer un projet spécifique
+- `PATCH /admin/projects/{id}/name` : Modifier le nom d'un projet
 
 **Pagination** : `page=1`, `page_size=20` (défaut)
 
@@ -397,6 +401,7 @@ RecursiveCharacterTextSplitter(
 │   projects   │        │
 │──────────────│        │
 │ project_id   │        │
+│ project_name │        │
 │ language     │        │
 └──────────────┘        │
        │                │

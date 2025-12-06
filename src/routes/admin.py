@@ -52,6 +52,7 @@ async def get_all_projects(
         projects_data.append({
             "project_id": project.project_id,
             "project_uuid": str(project.project_uuid),
+            "project_name": project.project_name,
             "project_language": project.project_language,
             "file_count": len(files),
             "created_at": project.created_at.isoformat() if project.created_at else None,
@@ -65,6 +66,33 @@ async def get_all_projects(
             "page": page,
             "page_size": page_size,
             "total_pages": total_pages
+        }
+    )
+
+@admin_router.get("/projects/{project_id}")
+async def get_project(
+    request: Request,
+    project_id: int,
+    current_user: dict = Depends(require_admin)
+):
+    """Get a single project by ID"""
+    project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project = await project_model.get_project_or_create_one(project_id=project_id)
+
+    return JSONResponse(
+        content={
+            "signal": "PROJECT_RETRIEVED",
+            "project": {
+                "project_id": project.project_id,
+                "project_uuid": str(project.project_uuid),
+                "project_name": project.project_name,
+                "project_language": project.project_language,
+                "created_at": project.created_at.isoformat() if project.created_at else None,
+                "updated_at": project.updated_at.isoformat() if project.updated_at else None,
+            }
         }
     )
 
@@ -100,6 +128,45 @@ async def delete_project(
 
     return JSONResponse(
         content={"signal": "PROJECT_DELETED", "project_id": project_id}
+    )
+
+@admin_router.patch("/projects/{project_id}/name")
+async def update_project_name(
+    request: Request,
+    project_id: int,
+    current_user: dict = Depends(require_admin)
+):
+    """Update the name of a project"""
+    body = await request.json()
+    project_name = body.get("project_name")
+
+    if not project_name:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"signal": "PROJECT_NAME_REQUIRED"}
+        )
+
+    project_model = await ProjectModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    project = await project_model.update_project_name(
+        project_id=project_id,
+        name=project_name
+    )
+
+    if not project:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"signal": "PROJECT_NOT_FOUND"}
+        )
+
+    return JSONResponse(
+        content={
+            "signal": "PROJECT_NAME_UPDATED",
+            "project_id": project.project_id,
+            "project_name": project.project_name
+        }
     )
 
 # ==================== ASSETS ====================

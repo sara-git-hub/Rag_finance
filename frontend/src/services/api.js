@@ -87,6 +87,8 @@ export const adminAPI = {
     api.get(`/admin/projects?page=${page}&page_size=${pageSize}`),
   deleteProject: (projectId) =>
     api.delete(`/admin/projects/${projectId}`),
+  updateProjectName: (projectId, projectName) =>
+    api.patch(`/admin/projects/${projectId}/name`, { project_name: projectName }),
 
   // Assets
   getAssets: (page = 1, pageSize = 20, projectId = null, assetType = null) => {

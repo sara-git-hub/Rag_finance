@@ -55,6 +55,20 @@ class ProjectModel(BaseDataModel):
                     return project
                 return None
 
+    async def update_project_name(self, project_id: int, name: str):
+        """Update the name of a project"""
+        async with self.db_client() as session:
+            async with session.begin():
+                query = select(Project).where(Project.project_id == project_id)
+                result = await session.execute(query)
+                project = result.scalar_one_or_none()
+
+                if project:
+                    project.project_name = name
+            await session.commit()
+            await session.refresh(project)
+            return project if project else None
+
     async def get_all_projects(self, page: int=1, page_size: int=10):
 
         async with self.db_client() as session:

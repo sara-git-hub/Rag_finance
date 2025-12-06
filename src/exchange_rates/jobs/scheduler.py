@@ -4,11 +4,18 @@ Configuration du planificateur pour les jobs quotidiens
 """
 
 import logging
+import time
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from typing import Dict, Callable
 from datetime import datetime
+
+from exchange_rates.metrics import (
+    SCHEDULER_JOB_SUCCESS,
+    SCHEDULER_JOB_ERROR,
+    SCHEDULER_JOB_DURATION
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,17 +39,33 @@ class ExchangeRatesScheduler:
 
     def _job_listener(self, event):
         """
-        Listener pour logger l'exécution des jobs
+        Listener pour logger l'exécution des jobs et enregistrer les métriques
 
         Args:
             event: Event object from APScheduler
         """
+        # Calculer la durée d'exécution si disponible
+        if hasattr(event, 'retval') and hasattr(event, 'scheduled_run_time'):
+            duration = (datetime.now() - event.scheduled_run_time).total_seconds()
+            if duration > 0:
+                SCHEDULER_JOB_DURATION.labels(job_name=event.job_id).observe(duration)
+
         if event.exception:
+            # Enregistrer l'erreur dans les métriques
+            error_type = type(event.exception).__name__
+            SCHEDULER_JOB_ERROR.labels(
+                job_name=event.job_id,
+                error_type=error_type
+            ).inc()
+
             logger.error(
                 f"Job {event.job_id} failed with exception: {event.exception}",
                 exc_info=True
             )
         else:
+            # Enregistrer le succès dans les métriques
+            SCHEDULER_JOB_SUCCESS.labels(job_name=event.job_id).inc()
+
             logger.info(f"Job {event.job_id} executed successfully")
 
     def add_daily_job(

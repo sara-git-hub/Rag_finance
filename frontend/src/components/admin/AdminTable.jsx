@@ -9,6 +9,7 @@ const AdminTable = ({
   currentPage,
   onPageChange,
   onDelete,
+  onEdit,
   onRefresh,
   loading,
   filters,
@@ -122,12 +123,22 @@ const AdminTable = ({
                     </td>
                   ))}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => setDeleteModal({ isOpen: true, item: row })}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Supprimer
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      {onEdit && (
+                        <button
+                          onClick={() => onEdit(row)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Modifier
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setDeleteModal({ isOpen: true, item: row })}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

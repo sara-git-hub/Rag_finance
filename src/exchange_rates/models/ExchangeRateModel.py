@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta
 from sqlalchemy.future import select
 from sqlalchemy import and_, desc
 from models.db_schemes import ExchangeRate, ModelMetrics, CurrencyPair, RateType
+from exchange_rates.metrics import EXCHANGE_RATES_IN_DB
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,11 @@ class ExchangeRateModel:
                 await session.flush()
                 await session.refresh(rate)
 
+                EXCHANGE_RATES_IN_DB.labels(
+                    currency_pair=currency_pair.value,
+                    rate_type=rate_type.value
+                ).inc()
+
             return rate
 
     async def insert_rates_batch(self, rates: List[dict]) -> int:
@@ -106,6 +112,12 @@ class ExchangeRateModel:
                     rate_objects.append(rate)
 
                 session.add_all(rate_objects)
+
+                for rate_data in rates:
+                    EXCHANGE_RATES_IN_DB.labels(
+                        currency_pair=rate_data['currency_pair'].value,
+                        rate_type=rate_data.get('rate_type', RateType.ACTUAL).value
+                    ).inc()
 
             return len(rate_objects)
 

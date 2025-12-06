@@ -63,7 +63,7 @@ def test_project_id()  # ID projet test
 
 #### 🔴 PRIORITÉ 1 - Tests Critiques (2 semaines)
 
-**A. Tests Endpoints API (37 endpoints)**
+**A. Tests Endpoints API (39 endpoints)**
 
 Fichier : `src/tests/test_routes.py`
 ```python
@@ -182,7 +182,7 @@ class TestNLPRoutes:
         assert len(data["sources"]) > 0
 ```
 
-**Couverture attendue** : 70% des routes (26/37 endpoints critiques)
+**Couverture attendue** : 70% des routes (27/39 endpoints critiques)
 
 ---
 

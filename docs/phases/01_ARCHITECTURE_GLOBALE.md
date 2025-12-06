@@ -111,7 +111,7 @@ Le projet **fil_rouge** est une application de **Retrieval-Augmented Generation 
 │   frontend:80           │   │   fastapi:8000                │
 │   - Nginx static files  │   │   - 7 routers                 │
 │   - Build Vite          │   │   - LangChain services        │
-│   - 18 routes           │   │   - 40+ endpoints             │
+│   - 19 routes           │   │   - 39 endpoints              │
 └─────────────────────────┘   └──────────┬────────────────────┘
                                          │
                     ┌────────────────────┼──────────────────┐
@@ -290,7 +290,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 | `/qa` | QA | RAG conversationnel avec historique |
 | `/exchange-rates` | ExchangeRates | Graphiques taux MAD/EUR, MAD/USD |
 
-#### Routes admin (12) - Admin uniquement
+#### Routes admin (13) - Admin uniquement
 | Path | Component | Rôle |
 |------|-----------|------|
 | `/upload` | Upload | Upload PDFs par projet |
@@ -329,7 +329,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 │                    COUCHE PRÉSENTATION                       │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  React 18 + Vite (SPA)                               │   │
-│  │  - 18 routes (2 publiques, 4 user, 12 admin)        │   │
+│  │  - 19 routes (2 publiques, 4 user, 13 admin)        │   │
 │  │  - Context (AuthContext)                             │   │
 │  │  - Hooks (useConversation)                           │   │
 │  │  - Services (api.js avec Axios interceptors)        │   │
@@ -354,7 +354,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 │                    COUCHE APPLICATIVE                        │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  FastAPI (Python 3.10)                               │   │
-│  │  ├─ Routes (7 routers, 40+ endpoints)                │   │
+│  │  ├─ Routes (7 routers, 39 endpoints)                 │   │
 │  │  │  ├─ base (health)                                 │   │
 │  │  │  ├─ auth (JWT)                                    │   │
 │  │  │  ├─ data (upload, process)                        │   │
@@ -680,8 +680,8 @@ client_max_body_size 100M;
 ✅ **Flux Monitoring** (Prometheus scrape → Grafana)
 ✅ **Flux RAG** (Upload → Process → Index → Query → Answer)
 ✅ **Points d'entrée** (`main.py`, `App.jsx`)
-✅ **18 routes React** (2 publiques, 4 user, 12 admin)
-✅ **7 routers FastAPI** (40+ endpoints)
+✅ **19 routes React** (2 publiques, 4 user, 13 admin)
+✅ **7 routers FastAPI** (39 endpoints)
 ✅ **7 volumes persistants** (~6-20GB)
 ✅ **Ordre de démarrage** optimal
 ✅ **Configuration sécurité** (4 fichiers .env)

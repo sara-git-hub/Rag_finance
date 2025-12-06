@@ -296,6 +296,7 @@ async def get_project_language(request: Request, project_id: int,
         content={
             "signal": "PROJECT_LANGUAGE_RETRIEVED",
             "project_id": project.project_id,
+            "project_name": project.project_name,
             "language": project.project_language,
             "file_count": len(project_files),
             "can_change_language": len(project_files) == 0
