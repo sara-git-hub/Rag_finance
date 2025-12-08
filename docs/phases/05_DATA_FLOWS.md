@@ -710,6 +710,201 @@ if (status === 401) {
 
 ---
 
+### 2.4 User Management (Admin) - Nouveaux Flux (Décembre 2025)
+
+#### 2.4.1 Create User (Admin)
+
+**Endpoint** : `POST /api/v1/auth/admin/users`
+
+**Diagramme de Séquence** :
+
+```
+Admin(UI)  Frontend  FastAPI  AuthRouter  UserModel  PostgreSQL  bcrypt
+   │           │         │         │           │           │         │
+   │ 1. Fill   │         │         │           │           │         │
+   │   form    │         │         │           │           │         │
+   │   (user/  │         │         │           │           │         │
+   │   admin)  │         │         │           │           │         │
+   │──────────>│         │         │           │           │         │
+   │           │         │         │           │           │         │
+   │           │ 2. POST /auth/admin/users     │           │         │
+   │           │   {username, email, password, role}       │         │
+   │           │────────>│         │           │           │         │
+   │           │         │         │           │           │         │
+   │           │         │ 3. Check admin      │           │         │
+   │           │         │   permissions       │           │         │
+   │           │         │   (require_admin)   │           │         │
+   │           │         │         │           │           │         │
+   │           │         │ 4. Validate         │           │         │
+   │           │         │   username/email    │           │         │
+   │           │         │────────────────────>│           │         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 5. SELECT │         │
+   │           │         │         │           │──────────>│         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 6. Exists?│         │
+   │           │         │         │           │<──────────│         │
+   │           │         │         │           │           │         │
+   │           │         │ 7. Hash password    │           │         │
+   │           │         │────────────────────────────────────────>│
+   │           │         │         │           │           │         │
+   │           │         │         │           │           │ 8. hash │
+   │           │         │<────────────────────────────────────────│
+   │           │         │         │           │           │         │
+   │           │         │ 9. Create with      │           │         │
+   │           │         │   specified role    │           │         │
+   │           │         │────────────────────>│           │         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 10. INSERT│         │
+   │           │         │         │           │──────────>│         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 11. user  │         │
+   │           │         │         │           │<──────────│         │
+   │           │         │         │           │           │         │
+   │           │         │ 12. Return user info (no token) │         │
+   │           │         │   {username, email, role, is_active}     │
+   │           │<────────│         │           │           │         │
+   │           │         │         │           │           │         │
+   │           │ 13. Success message           │           │         │
+   │<──────────│         │         │           │           │         │
+```
+
+**Différence avec /register** :
+- Pas de token JWT retourné
+- Admin peut choisir le rôle (user/admin)
+- Pas de règle "premier utilisateur = admin"
+
+---
+
+#### 2.4.2 Update User Password (Admin)
+
+**Endpoint** : `PATCH /api/v1/auth/users/{username}/password`
+
+**Diagramme de Séquence** :
+
+```
+Admin(UI)  Frontend  FastAPI  AuthRouter  UserModel  PostgreSQL  bcrypt
+   │           │         │         │           │           │         │
+   │ 1. Click  │         │         │           │           │         │
+   │   "Change │         │         │           │           │         │
+   │   Password"│         │         │           │           │         │
+   │──────────>│         │         │           │           │         │
+   │           │         │         │           │           │         │
+   │ 2. Modal  │         │         │           │           │         │
+   │   enter   │         │         │           │           │         │
+   │   new pwd │         │         │           │           │         │
+   │<──────────│         │         │           │           │         │
+   │           │         │         │           │           │         │
+   │ 3. Submit │         │         │           │           │         │
+   │──────────>│         │         │           │           │         │
+   │           │         │         │           │           │         │
+   │           │ 4. PATCH /auth/users/{username}/password  │         │
+   │           │   {new_password}   │           │           │         │
+   │           │────────>│         │           │           │         │
+   │           │         │         │           │           │         │
+   │           │         │ 5. Check admin      │           │         │
+   │           │         │   (require_admin)   │           │         │
+   │           │         │         │           │           │         │
+   │           │         │ 6. Get user         │           │         │
+   │           │         │────────────────────>│           │         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 7. SELECT │         │
+   │           │         │         │           │──────────>│         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 8. user   │         │
+   │           │         │         │           │<──────────│         │
+   │           │         │         │           │           │         │
+   │           │         │ 9. Hash new pwd     │           │         │
+   │           │         │────────────────────────────────────────>│
+   │           │         │         │           │           │         │
+   │           │         │         │           │           │ 10. hash│
+   │           │         │<────────────────────────────────────────│
+   │           │         │         │           │           │         │
+   │           │         │ 11. Update password │           │         │
+   │           │         │────────────────────>│           │         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 12. UPDATE│         │
+   │           │         │         │           │──────────>│         │
+   │           │         │         │           │           │         │
+   │           │         │         │           │ 13. OK    │         │
+   │           │         │         │           │<──────────│         │
+   │           │         │         │           │           │         │
+   │           │         │ 14. Success message │           │         │
+   │           │<────────│         │           │           │         │
+   │           │         │         │           │           │         │
+   │           │ 15. Close modal   │           │           │         │
+   │<──────────│         │         │           │           │         │
+```
+
+**Note** : Admin peut modifier son propre mot de passe ou celui de n'importe quel utilisateur.
+
+---
+
+#### 2.4.3 Delete User (Admin)
+
+**Endpoint** : `DELETE /api/v1/auth/users/{username}`
+
+**Diagramme de Séquence** :
+
+```
+Admin(UI)  Frontend  FastAPI  AuthRouter  UserModel  PostgreSQL
+   │           │         │         │           │           │
+   │ 1. Click  │         │         │           │           │
+   │   Delete  │         │         │           │           │
+   │──────────>│         │         │           │           │
+   │           │         │         │           │           │
+   │ 2. Check  │         │         │           │           │
+   │   if self │         │         │           │           │
+   │   (disable│         │         │           │           │
+   │   button) │         │         │           │           │
+   │           │         │         │           │           │
+   │ 3. Confirm│         │         │           │           │
+   │   dialog  │         │         │           │           │
+   │<──────────│         │         │           │           │
+   │           │         │         │           │           │
+   │ 4. Confirm│         │         │           │           │
+   │──────────>│         │         │           │           │
+   │           │         │         │           │           │
+   │           │ 5. DELETE /auth/users/{username}          │
+   │           │────────>│         │           │           │
+   │           │         │         │           │           │
+   │           │         │ 6. Check admin      │           │
+   │           │         │   (require_admin)   │           │
+   │           │         │         │           │           │
+   │           │         │ 7. Check not self   │           │
+   │           │         │   (backend protect) │           │
+   │           │         │         │           │           │
+   │           │         │ 8. Get user         │           │
+   │           │         │────────────────────>│           │
+   │           │         │         │           │           │
+   │           │         │         │           │ 9. SELECT │
+   │           │         │         │           │──────────>│
+   │           │         │         │           │           │
+   │           │         │         │           │ 10. user  │
+   │           │         │         │           │<──────────│
+   │           │         │         │           │           │
+   │           │         │ 11. Delete user     │           │
+   │           │         │────────────────────>│           │
+   │           │         │         │           │           │
+   │           │         │         │           │ 12. DELETE│
+   │           │         │         │           │──────────>│
+   │           │         │         │           │           │
+   │           │         │         │           │ 13. OK    │
+   │           │         │         │           │<──────────│
+   │           │         │         │           │           │
+   │           │         │ 14. Success message │           │
+   │           │<────────│         │           │           │
+   │           │         │         │           │           │
+   │           │ 15. Refresh list  │           │           │
+   │           │────────>│         │           │           │
+```
+
+**Protections** :
+- **Frontend** : Bouton désactivé si username = current_user
+- **Backend** : HTTP 403 si tentative d'auto-suppression
+
+---
+
 ## 3. Flux Exchange Rates (ML)
 
 ### 3.1 Scheduler Quotidien

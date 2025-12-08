@@ -39,6 +39,9 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   getMe: () => api.get('/auth/me'),
   getAllUsers: () => api.get('/auth/users'),
+  createUser: (userData) => api.post('/auth/admin/users', userData),
+  deleteUser: (username) => api.delete(`/auth/users/${username}`),
+  updateUserPassword: (username, newPassword) => api.patch(`/auth/users/${username}/password`, { new_password: newPassword }),
 };
 
 export const dataAPI = {

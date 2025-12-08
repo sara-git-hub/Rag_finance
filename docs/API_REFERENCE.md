@@ -1,6 +1,6 @@
 # 🔌 API Reference - Projet Fil Rouge
 
-> Référence complète des 39 endpoints de l'API FastAPI
+> Référence complète des 42 endpoints de l'API FastAPI
 > **Base URL** : `http://localhost:8000` (développement) ou votre domaine en production
 > **Dernière mise à jour** : Décembre 2025
 
@@ -10,7 +10,7 @@
 
 1. [Vue d'ensemble](#vue-densemble)
 2. [Base](#base) - 1 endpoint
-3. [Authentication](#authentication) - 4 endpoints
+3. [Authentication](#authentication) - 7 endpoints
 4. [Data Management](#data-management) - 4 endpoints
 5. [NLP / RAG](#nlp--rag) - 4 endpoints
 6. [Conversations](#conversations) - 4 endpoints
@@ -201,9 +201,118 @@ curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6..." \
 
 ---
 
+### 5. Create User (Admin)
+
+**Endpoint** : `POST /api/v1/auth/admin/users`
+**Auth** : Admin only
+**Description** : Permet à un administrateur de créer un nouvel utilisateur avec un rôle spécifique (user ou admin).
+
+**Request Body** :
+```json
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "SecureP@ss123",
+  "role": "user"
+}
+```
+
+**Parameters** :
+- `username` (string, required) : Nom d'utilisateur unique
+- `email` (string, required) : Email unique (format valide)
+- `password` (string, required) : Mot de passe
+- `role` (string, optional) : `"user"` ou `"admin"` (défaut: `"user"`)
+
+**Response (200 OK)** :
+```json
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "role": "user",
+  "is_active": true
+}
+```
+
+**Errors** :
+- `400 Bad Request` : Username or email already exists
+- `403 Forbidden` : Not admin
+- `422 Unprocessable Entity` : Invalid email format
+
+**Notes** :
+- Contrairement à `/auth/register`, cette route ne retourne pas de token JWT
+- L'utilisateur créé doit se connecter via `/auth/login` pour obtenir son token
+- Permet de créer directement des administrateurs sans passer par le système "premier utilisateur = admin"
+
+---
+
+### 6. Update User Password (Admin)
+
+**Endpoint** : `PATCH /api/v1/auth/users/{username}/password`
+**Auth** : Admin only
+**Description** : Permet à un administrateur de modifier le mot de passe de n'importe quel utilisateur, y compris son propre mot de passe ou celui d'autres administrateurs.
+
+**Path Parameters** :
+- `username` (string) : Nom d'utilisateur cible
+
+**Request Body** :
+```json
+{
+  "new_password": "NewSecureP@ss456"
+}
+```
+
+**Response (200 OK)** :
+```json
+{
+  "message": "Password for user 'johndoe' has been updated successfully"
+}
+```
+
+**Errors** :
+- `403 Forbidden` : Not admin
+- `404 Not Found` : User not found
+- `500 Internal Server Error` : Failed to update password
+
+**Notes** :
+- Le nouveau mot de passe est automatiquement hashé avec bcrypt
+- L'administrateur peut modifier son propre mot de passe
+- Aucune vérification de l'ancien mot de passe n'est requise (opération admin)
+
+---
+
+### 7. Delete User (Admin)
+
+**Endpoint** : `DELETE /api/v1/auth/users/{username}`
+**Auth** : Admin only
+**Description** : Supprime un utilisateur. Un administrateur ne peut pas se supprimer lui-même.
+
+**Path Parameters** :
+- `username` (string) : Nom d'utilisateur à supprimer
+
+**Response (200 OK)** :
+```json
+{
+  "message": "User 'johndoe' has been deleted successfully"
+}
+```
+
+**Errors** :
+- `403 Forbidden` :
+  - Not admin
+  - Attempting to delete own account (`"You cannot delete your own account"`)
+- `404 Not Found` : User not found
+- `500 Internal Server Error` : Failed to delete user
+
+**⚠️ Protections** :
+- Un administrateur ne peut **jamais** se supprimer lui-même
+- Opération irréversible - aucune récupération possible
+- Considérez la désactivation (`is_active = false`) comme alternative
+
+---
+
 ## Data Management
 
-### 5. Upload File
+### 8. Upload File
 
 **Endpoint** : `POST /api/v1/data/upload/{project_id}`
 **Auth** : Admin only
@@ -242,7 +351,7 @@ curl -X POST \
 
 ---
 
-### 6. Process Documents
+### 9. Process Documents
 
 **Endpoint** : `POST /api/v1/data/process/{project_id}`
 **Auth** : Admin only
@@ -289,7 +398,7 @@ curl -X POST \
 
 ---
 
-### 7. Get Project Language
+### 10. Get Project Language
 
 **Endpoint** : `GET /api/v1/data/project/{project_id}/language`
 **Auth** : User
@@ -315,7 +424,7 @@ curl -X POST \
 
 ---
 
-### 8. Update Project Language
+### 11. Update Project Language
 
 **Endpoint** : `PUT /api/v1/data/project/{project_id}/language`
 **Auth** : Admin only
@@ -343,7 +452,7 @@ curl -X POST \
 
 ## NLP / RAG
 
-### 9. Index to Vector DB
+### 12. Index to Vector DB
 
 **Endpoint** : `POST /api/v1/nlp/index/push/{project_id}`
 **Auth** : Admin only
@@ -383,7 +492,7 @@ curl -X POST \
 
 ---
 
-### 10. Get Index Info
+### 13. Get Index Info
 
 **Endpoint** : `GET /api/v1/nlp/index/info/{project_id}`
 **Auth** : Admin only
@@ -407,7 +516,7 @@ curl -X POST \
 
 ---
 
-### 11. Semantic Search
+### 14. Semantic Search
 
 **Endpoint** : `POST /api/v1/nlp/index/search/{project_id}`
 **Auth** : User
@@ -451,7 +560,7 @@ curl -X POST \
 
 ---
 
-### 12. RAG Question Answering
+### 15. RAG Question Answering
 
 **Endpoint** : `POST /api/v1/nlp/index/answer/{project_id}`
 **Auth** : User
@@ -515,7 +624,7 @@ curl -X POST \
 
 ## Conversations
 
-### 13. Create Conversation
+### 16. Create Conversation
 
 **Endpoint** : `POST /api/v1/conversations/create`
 **Auth** : User
@@ -547,7 +656,7 @@ curl -X POST \
 
 ---
 
-### 14. List Conversations
+### 17. List Conversations
 
 **Endpoint** : `GET /api/v1/conversations/project/{project_id}`
 **Auth** : User
@@ -575,7 +684,7 @@ curl -X POST \
 
 ---
 
-### 15. Get Messages
+### 18. Get Messages
 
 **Endpoint** : `GET /api/v1/conversations/{conversation_id}/messages`
 **Auth** : User (owner only)
@@ -609,7 +718,7 @@ curl -X POST \
 
 ---
 
-### 16. Delete Conversation
+### 19. Delete Conversation
 
 **Endpoint** : `DELETE /api/v1/conversations/{conversation_id}`
 **Auth** : User (owner only)
@@ -629,7 +738,7 @@ curl -X POST \
 
 ## Exchange Rates
 
-### 17. Get Latest Rates
+### 20. Get Latest Rates
 
 **Endpoint** : `GET /api/v1/exchange-rates/latest`
 **Auth** : User
@@ -660,7 +769,7 @@ curl -X POST \
 
 ---
 
-### 18. Get Predictions
+### 21. Get Predictions
 
 **Endpoint** : `GET /api/v1/exchange-rates/predictions`
 **Auth** : User
@@ -709,7 +818,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ---
 
-### 19. Get History
+### 22. Get History
 
 **Endpoint** : `GET /api/v1/exchange-rates/history`
 **Auth** : User
@@ -740,7 +849,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ---
 
-### 20. Train ML Model (Admin)
+### 23. Train ML Model (Admin)
 
 **Endpoint** : `POST /api/v1/exchange-rates/admin/train-model`
 **Auth** : Admin only
@@ -780,7 +889,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ---
 
-### 21. Generate Predictions (Admin)
+### 24. Generate Predictions (Admin)
 
 **Endpoint** : `POST /api/v1/exchange-rates/admin/generate-predictions`
 **Auth** : Admin only
@@ -806,7 +915,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ---
 
-### 22. Fetch Rates Now (Admin)
+### 25. Fetch Rates Now (Admin)
 
 **Endpoint** : `POST /api/v1/exchange-rates/admin/fetch-now`
 **Auth** : Admin only
@@ -828,7 +937,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ---
 
-### 23. Get Model Info (Admin)
+### 26. Get Model Info (Admin)
 
 **Endpoint** : `GET /api/v1/exchange-rates/admin/model-info`
 **Auth** : Admin only
@@ -853,7 +962,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ## Admin
 
-### 24-36. Admin CRUD Endpoints
+### 27-39. Admin CRUD Endpoints
 
 **Pattern général** : Tous les endpoints admin suivent la même structure.
 
@@ -962,21 +1071,21 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 | # | Endpoint | Method | Description |
 |---|----------|--------|-------------|
-| 24 | `/admin/projects` | GET | Liste projets (pagination) |
-| 25 | `/admin/projects/{id}` | GET | Récupère un projet par ID |
-| 26 | `/admin/projects/{id}` | DELETE | Supprime projet (cascade) |
-| 27 | `/admin/projects/{id}/name` | PATCH | Modifie le nom d'un projet |
-| 28 | `/admin/assets` | GET | Liste assets (filtres: project_id, type) |
-| 29 | `/admin/assets/{id}` | DELETE | Supprime asset + fichier |
-| 30 | `/admin/chunks` | GET | Liste chunks (filtres: project_id, asset_id) |
-| 31 | `/admin/chunks/{id}` | DELETE | Supprime chunk |
-| 32 | `/admin/conversations` | GET | Liste conversations (filtre: project_id) |
-| 33 | `/admin/conversations/{id}` | DELETE | Supprime conversation + messages |
-| 34 | `/admin/messages` | GET | Liste messages (filtre: conversation_id) |
-| 35 | `/admin/messages/{id}` | DELETE | Supprime message |
-| 36 | `/admin/vectors/collections` | GET | Liste toutes les collections Qdrant |
-| 37 | `/admin/vectors/collections/{collection_name}` | GET | Stats d'une collection Qdrant |
-| 38 | `/admin/vectors/collections/{collection_name}` | DELETE | Supprime une collection Qdrant |
+| 39 | `/admin/projects` | GET | Liste projets (pagination) |
+| 40 | `/admin/projects/{id}` | GET | Récupère un projet par ID |
+| 41 | `/admin/projects/{id}` | DELETE | Supprime projet (cascade) |
+| 39 | `/admin/projects/{id}/name` | PATCH | Modifie le nom d'un projet |
+| 40 | `/admin/assets` | GET | Liste assets (filtres: project_id, type) |
+| 41 | `/admin/assets/{id}` | DELETE | Supprime asset + fichier |
+| 39 | `/admin/chunks` | GET | Liste chunks (filtres: project_id, asset_id) |
+| 40 | `/admin/chunks/{id}` | DELETE | Supprime chunk |
+| 41 | `/admin/conversations` | GET | Liste conversations (filtre: project_id) |
+| 39 | `/admin/conversations/{id}` | DELETE | Supprime conversation + messages |
+| 40 | `/admin/messages` | GET | Liste messages (filtre: conversation_id) |
+| 41 | `/admin/messages/{id}` | DELETE | Supprime message |
+| 39 | `/admin/vectors/collections` | GET | Liste toutes les collections Qdrant |
+| 40 | `/admin/vectors/collections/{collection_name}` | GET | Stats d'une collection Qdrant |
+| 41 | `/admin/vectors/collections/{collection_name}` | DELETE | Supprime une collection Qdrant |
 
 **Filtres communs** :
 - `page` (int) : Numéro de page
@@ -989,7 +1098,7 @@ GET /api/v1/exchange-rates/predictions?currency_pair=MAD/EUR&days_history=30&day
 
 ## Monitoring
 
-### 37. Prometheus Metrics
+### 42. Prometheus Metrics
 
 **Endpoint** : `GET /TrhBVe_m5gg2002_E5VVqS`
 **Auth** : Public (obscured URL for security)
@@ -1175,8 +1284,9 @@ curl -X GET "http://localhost:8000/api/v1/conversations/$CONV_ID/messages" \
 ## Changelog API
 
 ### Version 1.0 (Décembre 2025)
-- ✅ 39 endpoints documentés
+- ✅ 42 endpoints documentés
 - ✅ Authentication JWT (24h expiration)
+- ✅ User management admin (create, delete, update password)
 - ✅ RAG pipeline complet (Qdrant + Ollama)
 - ✅ Exchange Rates ML (LSTM predictions)
 - ✅ Admin CRUD (7 entities + gestion projets)

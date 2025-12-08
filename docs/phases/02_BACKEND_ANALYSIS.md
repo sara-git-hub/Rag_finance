@@ -9,7 +9,7 @@
 ## 📋 Synthèse Globale
 
 **Backend FastAPI complet analysé** :
-- **39 endpoints** répartis sur 7 routers
+- **42 endpoints** répartis sur 7 routers
 - **5 contrôleurs** (~714 lignes de code)
 - **5 services LangChain** (~1252 lignes)
 - **7 tables PostgreSQL** avec relations
@@ -18,23 +18,23 @@
 
 ---
 
-## 1. Routes & Endpoints (39 endpoints)
+## 1. Routes & Endpoints (42 endpoints)
 
 ### Vue d'ensemble
 
 | Router | Fichier | Endpoints | Auth | Rôle Principal |
 |--------|---------|-----------|------|----------------|
 | Base | `base.py` | 1 | Public | Info API |
-| Auth | `auth.py` | 4 | Mixed | JWT + bcrypt |
+| Auth | `auth.py` | 7 | Mixed | JWT + bcrypt + User Management |
 | Data | `data.py` | 4 | Admin | Upload & Processing PDF |
 | Conversation | `conversation.py` | 4 | User | Historique chat |
 | NLP | `nlp.py` | 4 | Mixed | **Pipeline RAG complet** |
 | Admin | `admin.py` | 15 | Admin | CRUD toutes entités |
 | Exchange | `exchange_routes.py` | 7 | Mixed | Prédictions ML |
 
-### 1.1 Auth Router - Authentification JWT
+### 1.1 Auth Router - Authentification JWT & User Management
 
-**4 endpoints** pour l'authentification avec JWT (24h) et bcrypt (cost 12).
+**7 endpoints** pour l'authentification avec JWT (24h), bcrypt (cost 12) et gestion des utilisateurs par admin.
 
 | Endpoint | Méthode | Auth | Description |
 |----------|---------|------|-------------|
@@ -42,12 +42,20 @@
 | `/api/v1/auth/login` | POST | Public | Login → JWT token (24h) |
 | `/api/v1/auth/me` | GET | User | Infos utilisateur actuel |
 | `/api/v1/auth/users` | GET | Admin | Liste tous les users |
+| `/api/v1/auth/admin/users` | POST | Admin | **Créer un utilisateur (user/admin)** |
+| `/api/v1/auth/users/{username}/password` | PATCH | Admin | **Modifier mot de passe utilisateur** |
+| `/api/v1/auth/users/{username}` | DELETE | Admin | **Supprimer un utilisateur** |
 
 **Caractéristiques** :
 - JWT payload : `{username, role, exp}`
 - Expiration : 24 heures
 - Rôles : `admin` ou `user`
 - Premier utilisateur inscrit devient automatiquement admin
+
+**Nouveaux endpoints de gestion (Décembre 2025)** :
+- **Create User** : Admin peut créer directement des users/admins (pas de token retourné)
+- **Update Password** : Admin peut modifier n'importe quel mot de passe (y compris le sien)
+- **Delete User** : Admin peut supprimer des users (protection : ne peut pas se supprimer lui-même)
 
 ### 1.2 Data Router - Gestion Fichiers
 

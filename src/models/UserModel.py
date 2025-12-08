@@ -1,6 +1,6 @@
 from models.BaseDataModel import BaseDataModel
 from models.db_schemes.minirag.schemes.user import User, UserRole
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -73,4 +73,37 @@ class UserModel(BaseDataModel):
                 user.is_active = False
                 await session.commit()
                 await session.refresh(user)
+            return user
+
+    async def delete_user(self, username: str):
+        """Delete a user by username. Returns True if deleted, False if not found."""
+        async with self.db_client() as session:
+            result = await session.execute(
+                select(User).where(User.username == username)
+            )
+            user = result.scalar_one_or_none()
+
+            if not user:
+                return False
+
+            await session.execute(
+                delete(User).where(User.username == username)
+            )
+            await session.commit()
+            return True
+
+    async def update_user_password(self, username: str, new_password: str):
+        """Update a user's password. Returns the updated user or None if not found."""
+        async with self.db_client() as session:
+            result = await session.execute(
+                select(User).where(User.username == username)
+            )
+            user = result.scalar_one_or_none()
+
+            if not user:
+                return None
+
+            user.hashed_password = self.get_password_hash(new_password)
+            await session.commit()
+            await session.refresh(user)
             return user

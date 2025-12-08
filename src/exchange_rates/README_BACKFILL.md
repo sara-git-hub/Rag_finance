@@ -225,3 +225,177 @@ Source: Bank Al-Maghrib (www.bkam.ma)
 ```
 
 Cette attribution est automatiquement incluse dans le champ `source` de chaque enregistrement.
+
+---
+
+## Utilisation avec Docker
+
+Si votre application tourne dans Docker, vous pouvez exécuter le script de backfill manuel directement depuis votre machine hôte.
+
+### Prérequis
+
+- Docker et docker-compose installés
+- Les conteneurs en cours d'exécution (`docker ps` pour vérifier)
+- Le conteneur `fastapi` doit être actif
+
+### Commande de base
+
+```bash
+docker exec -it fastapi python /app/exchange_rates/manual_backfill.py --start-date YYYY-MM-DD --end-date YYYY-MM-DD
+```
+
+### Exemples d'utilisation avec Docker
+
+#### 1. Récupérer une seule journée
+
+```bash
+docker exec -it fastapi python /app/exchange_rates/manual_backfill.py --start-date 2024-11-15 --end-date 2024-11-15
+```
+
+**Durée estimée**: ~3 secondes (pas de délai entre requêtes)
+
+#### 2. Récupérer une semaine
+
+```bash
+docker exec -it fastapi python /app/exchange_rates/manual_backfill.py --start-date 2024-11-01 --end-date 2024-11-07
+```
+
+**Durée estimée**: ~3,5 minutes (7 jours × 30 secondes / 60)
+
+#### 3. Récupérer un mois complet
+
+```bash
+docker exec -it fastapi python /app/exchange_rates/manual_backfill.py --start-date 2024-10-01 --end-date 2024-10-31
+```
+
+**Durée estimée**: ~15 minutes (30 jours × 30 secondes / 60)
+
+#### 4. Récupérer plusieurs mois avec délai personnalisé
+
+```bash
+docker exec -it fastapi python /app/exchange_rates/manual_backfill.py --start-date 2024-01-01 --end-date 2024-06-30 --delay 45
+```
+
+**Durée estimée**: ~2,25 heures (180 jours × 45 secondes / 3600)
+
+### Structure de la commande Docker
+
+```
+docker exec -it fastapi python /app/exchange_rates/manual_backfill.py [OPTIONS]
+```
+
+**Décomposition** :
+- `docker exec` : Exécute une commande dans un conteneur Docker
+- `-it` : Mode interactif avec terminal (permet de voir les logs en temps réel et d'arrêter avec Ctrl+C)
+- `fastapi` : Nom du conteneur backend (vérifiable avec `docker ps`)
+- `python /app/exchange_rates/manual_backfill.py` : Script Python à exécuter
+- `[OPTIONS]` : Paramètres du script (--start-date, --end-date, --delay)
+
+### Logs en temps réel
+
+Avec l'option `-it`, vous verrez les logs s'afficher en direct :
+
+```
+======================================================================
+MANUAL BACKFILL STARTING
+======================================================================
+Date range: 2024-09-01 to 2024-09-05
+Total days to fetch: 5
+Delay between requests: 30 seconds
+Estimated duration: 2.5 minutes
+======================================================================
+→ Fetching 2024-09-01...
+  ✓ MAD/EUR saved
+  ✓ MAD/USD saved
+→ Fetching 2024-09-02...
+  ✗ No data available from API
+⊘ 2024-09-05 - Data already exists, skipping
+======================================================================
+MANUAL BACKFILL COMPLETED
+======================================================================
+Total days processed: 5
+Successfully retrieved: 2 days
+Errors: 2 days
+Skipped (already exists): 1 days
+Success rate: 40.0%
+======================================================================
+```
+
+### Arrêter le script
+
+Si vous devez arrêter le script en cours d'exécution :
+
+1. **Ctrl+C** dans votre terminal
+2. Le script s'arrêtera proprement
+3. Les données déjà récupérées sont sauvegardées
+4. Vous pouvez relancer le script plus tard, il sautera les jours déjà récupérés
+
+### Vérification du conteneur
+
+Avant d'exécuter le script, vérifiez que le conteneur `fastapi` est actif :
+
+```bash
+docker ps
+```
+
+Vous devriez voir une ligne contenant `fastapi` avec le statut `Up`.
+
+### Résolution de problèmes Docker
+
+#### Erreur: "No such container"
+
+**Cause**: Le conteneur `fastapi` n'est pas démarré
+
+**Solution**:
+```bash
+cd docker
+docker-compose up -d
+```
+
+#### Erreur: "the input device is not a TTY"
+
+**Cause**: Vous utilisez Git Bash ou MinTTY sur Windows
+
+**Solution**: Préfixer la commande avec `winpty`
+```bash
+winpty docker exec -it fastapi python /app/exchange_rates/manual_backfill.py --start-date 2024-11-15 --end-date 2024-11-15
+```
+
+Ou utiliser **PowerShell** ou **CMD** à la place de Git Bash.
+
+#### Erreur: "Can't open file"
+
+**Cause**: Chemin incorrect du fichier dans le conteneur
+
+**Solution**: Vérifier que le chemin est `/app/exchange_rates/manual_backfill.py` (sans `/src/`)
+
+### Différences avec l'exécution locale
+
+| Aspect | Local | Docker |
+|--------|-------|--------|
+| **Commande** | `python manual_backfill.py ...` | `docker exec -it fastapi python /app/exchange_rates/manual_backfill.py ...` |
+| **Environnement** | Variables `.env` locales | Variables `.env` du conteneur |
+| **Base de données** | Connexion locale PostgreSQL | Connexion au conteneur `pgvector` |
+| **Installation** | Requiert `pip install -r requirements.txt` | Déjà installé dans l'image Docker |
+| **Dépendances** | Gérées manuellement | Gérées automatiquement par Docker |
+
+### Avantages de l'utilisation Docker
+
+✅ **Pas d'installation Python locale nécessaire**
+✅ **Environnement cohérent** (même version Python, mêmes dépendances)
+✅ **Configuration automatique** (variables d'environnement déjà configurées)
+✅ **Connexion base de données** automatique vers le conteneur PostgreSQL
+✅ **Pas de conflits** avec d'autres projets Python locaux
+
+### Cas d'usage recommandés
+
+**Utilisez Docker quand** :
+- Vous n'avez pas Python installé localement
+- Votre application tourne déjà dans Docker
+- Vous voulez éviter les problèmes de configuration
+- Vous travaillez en équipe (environnement reproductible)
+
+**Utilisez l'exécution locale quand** :
+- Vous développez activement sur le script
+- Vous avez besoin de déboguer le code
+- Vous voulez modifier le script en temps réel

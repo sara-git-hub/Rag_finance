@@ -202,7 +202,7 @@ api.interceptors.response.use(
 
 ### Modules API (6 modules)
 
-#### 1. authAPI - Authentification
+#### 1. authAPI - Authentification & User Management
 
 | Fonction | Méthode | Endpoint | Description |
 |----------|---------|----------|-------------|
@@ -210,6 +210,13 @@ api.interceptors.response.use(
 | `register()` | POST | `/auth/register` | Inscription |
 | `getMe()` | GET | `/auth/me` | User actuel |
 | `getAllUsers()` | GET | `/auth/users` | Liste users (admin) |
+| `createUser()` | POST | `/auth/admin/users` | **Créer user/admin (admin)** |
+| `updateUserPassword()` | PATCH | `/auth/users/{username}/password` | **Modifier mot de passe (admin)** |
+| `deleteUser()` | DELETE | `/auth/users/{username}` | **Supprimer user (admin)** |
+
+**Nouveaux endpoints (Décembre 2025)** :
+- Gestion complète des utilisateurs par les administrateurs
+- Protection auto-suppression dans l'interface (bouton désactivé)
 
 #### 2. dataAPI - Gestion Fichiers
 
@@ -818,12 +825,23 @@ useEffect(() => {
 
 **Fonctionnalités** :
 - Liste tous les users (table)
-- Colonnes : ID, Username, Email, Role, Date création
-- Filtrage par rôle (admin/user)
-- Pagination (20 users/page)
-- Bouton supprimer (avec confirmation)
+- Colonnes : Username, Email, Role, Statut, Actions
+- **Formulaire d'ajout** : Création user/admin avec rôle sélectionnable
+- **Bouton modifier mot de passe** : Modal pour changer le mot de passe
+- **Bouton supprimer** : Suppression avec confirmation (désactivé pour soi-même)
+- Statistiques : Total users, admins, users actifs
+- Messages de feedback (succès/erreur)
 
-**Backend endpoint** : `GET /auth/users`
+**Backend endpoints** :
+- `GET /auth/users` - Liste des utilisateurs
+- `POST /auth/admin/users` - Créer un utilisateur
+- `PATCH /auth/users/{username}/password` - Modifier mot de passe
+- `DELETE /auth/users/{username}` - Supprimer utilisateur
+
+**Protections UI** :
+- Admin ne peut pas se supprimer lui-même (bouton désactivé)
+- Confirmation avant suppression
+- Formulaire repliable (toggle)
 
 ### 7.9 ExchangeRates - Taux de Change (User)
 
@@ -1135,14 +1153,14 @@ if (file.size > 100 * 1024 * 1024) return alert('Max 100MB');
 
 ### API Calls
 
-- **authAPI** : 4 endpoints
+- **authAPI** : 7 endpoints (authentification + gestion utilisateurs)
 - **dataAPI** : 4 endpoints
 - **nlpAPI** : 4 endpoints
 - **conversationAPI** : 4 endpoints
 - **adminAPI** : ~25 endpoints (CRUD multi-entités)
 - **publicAPI** : 3 endpoints (exchange rates)
 
-**Total** : ~44 fonctions API
+**Total** : ~47 fonctions API
 
 ---
 
