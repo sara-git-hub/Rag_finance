@@ -149,7 +149,9 @@ async def process_endpoint(request: Request, project_id: int, process_request: P
         vector_db_backend=request.app.vector_db_backend,
         vector_db_path=request.app.vector_db_path,
         connection_string=request.app.postgres_conn_sync,
-        qdrant_url=request.app.qdrant_url
+        qdrant_url=request.app.qdrant_url,
+        max_tokens=request.app.generation_max_tokens,
+        temperature=request.app.generation_temperature
     )
 
     asset_model = await AssetModel.create_instance(

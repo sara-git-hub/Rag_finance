@@ -71,6 +71,8 @@ async def startup_span(app: FastAPI):
     # Generation (LLM) configuration
     app.generation_backend = settings.GENERATION_BACKEND
     app.generation_model = settings.GENERATION_MODEL_ID
+    app.generation_max_tokens = settings.GENERATION_DEFAULT_MAX_TOKENS or 1000
+    app.generation_temperature = settings.GENERATION_DEFAULT_TEMPERATURE or 0.7
 
     # Set API key based on provider
     if settings.GENERATION_BACKEND == "openai":

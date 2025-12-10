@@ -21,7 +21,7 @@ class NLPController(BaseController):
     def __init__(self, embeddings_service, prompt_service, generation_backend: str,
                  generation_model: str, api_key: str, vector_db_backend: str = "qdrant",
                  vector_db_path: str = "assets/database", connection_string: str = None,
-                 qdrant_url: str = None):
+                 qdrant_url: str = None, max_tokens: int = 1000, temperature: float = 0.7):
         """
         Initialize NLP Controller with LangChain services
 
@@ -35,6 +35,8 @@ class NLPController(BaseController):
             vector_db_path: Path for vector DB storage (for local Qdrant)
             connection_string: PostgreSQL connection string (for PGVector)
             qdrant_url: URL for remote Qdrant (e.g. http://qdrant:6333 in Docker)
+            max_tokens: Maximum tokens for generation (default: 1000)
+            temperature: Temperature for generation (default: 0.7)
         """
         super().__init__()
 
@@ -47,6 +49,8 @@ class NLPController(BaseController):
         self.vector_db_path = vector_db_path
         self.connection_string = connection_string
         self.qdrant_url = qdrant_url
+        self.max_tokens = max_tokens
+        self.temperature = temperature
 
         # Cache for vector stores (one per project)
         self._vectorstores = {}
@@ -105,30 +109,30 @@ class NLPController(BaseController):
             return ChatOpenAI(
                 model=self.generation_model,
                 openai_api_key=self.api_key,
-                temperature=0.7,
-                max_tokens=1000
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
             )
         elif self.generation_backend == "cohere":
             return ChatCohere(
                 model=self.generation_model,
                 cohere_api_key=self.api_key,
-                temperature=0.7,
-                max_tokens=1000
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
             )
         elif self.generation_backend == "ollama":
             base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             return ChatOllama(
                 model=self.generation_model,
                 base_url=base_url,
-                temperature=0.7,
-                num_predict=1000
+                temperature=self.temperature,
+                num_predict=self.max_tokens
             )
         elif self.generation_backend == "groq":
             return ChatGroq(
                 model=self.generation_model,
                 groq_api_key=self.api_key,
-                temperature=0.7,
-                max_tokens=1000
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
             )
         else:
             raise ValueError(f"Unsupported generation backend: {self.generation_backend}. Supported: openai, cohere, ollama, groq")

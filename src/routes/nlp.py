@@ -52,7 +52,9 @@ async def index_project(request: Request, project_id: int, push_request: PushReq
         vector_db_backend=request.app.vector_db_backend,
         vector_db_path=request.app.vector_db_path,
         connection_string=request.app.postgres_conn_sync,
-        qdrant_url=request.app.qdrant_url
+        qdrant_url=request.app.qdrant_url,
+        max_tokens=request.app.generation_max_tokens,
+        temperature=request.app.generation_temperature
     )
 
     has_records = True
@@ -122,7 +124,9 @@ async def get_project_index_info(request: Request, project_id: int,
         vector_db_backend=request.app.vector_db_backend,
         vector_db_path=request.app.vector_db_path,
         connection_string=request.app.postgres_conn_sync,
-        qdrant_url=request.app.qdrant_url
+        qdrant_url=request.app.qdrant_url,
+        max_tokens=request.app.generation_max_tokens,
+        temperature=request.app.generation_temperature
     )
 
     collection_info = await nlp_controller.get_vector_db_collection_info(project=project)
@@ -158,7 +162,9 @@ async def search_index(request: Request, project_id: int, search_request: Search
             vector_db_backend=request.app.vector_db_backend,
             vector_db_path=request.app.vector_db_path,
             connection_string=request.app.postgres_conn_sync,
-            qdrant_url=request.app.qdrant_url
+            qdrant_url=request.app.qdrant_url,
+            max_tokens=request.app.generation_max_tokens,
+            temperature=request.app.generation_temperature
         )
 
         # Call sync method
@@ -256,7 +262,9 @@ async def answer_rag(request: Request, project_id: int, search_request: SearchRe
         vector_db_backend=request.app.vector_db_backend,
         vector_db_path=request.app.vector_db_path,
         connection_string=request.app.postgres_conn_sync,
-        qdrant_url=request.app.qdrant_url
+        qdrant_url=request.app.qdrant_url,
+        max_tokens=request.app.generation_max_tokens,
+        temperature=request.app.generation_temperature
     )
 
     # Use ASYNC method directly (no thread wrapping needed)

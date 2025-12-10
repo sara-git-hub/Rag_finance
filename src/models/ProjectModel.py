@@ -84,7 +84,7 @@ class ProjectModel(BaseDataModel):
                 if total_documents % page_size > 0:
                     total_pages += 1
 
-                query = select(Project).offset((page - 1) * page_size ).limit(page_size)
+                query = select(Project).order_by(Project.project_id.asc()).offset((page - 1) * page_size ).limit(page_size)
                 result = await session.execute(query)
                 projects = result.scalars().all()
 

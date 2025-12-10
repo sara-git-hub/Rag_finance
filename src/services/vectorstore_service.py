@@ -309,10 +309,23 @@ class VectorStoreService:
         # Qdrant-specific stats
         try:
             collection_info = self.vectorstore.client.get_collection(self.collection_name)
-            stats["vectors_count"] = collection_info.vectors_count
+            stats["vectors_count"] = collection_info.points_count  # Use points_count instead of vectors_count
             stats["points_count"] = collection_info.points_count
-        except:
-            stats["vectors_count"] = "unknown"
+
+            # Extract vector size from configuration (same logic as admin.py)
+            vectors_config = collection_info.config.params.vectors
+            if hasattr(vectors_config, 'size'):
+                # Unnamed vector config
+                stats["vector_size"] = vectors_config.size
+            else:
+                # Named vector configs (dict-like)
+                first_vector = next(iter(vectors_config.values())) if vectors_config else None
+                stats["vector_size"] = first_vector.size if first_vector else None
+        except Exception as e:
+            stats["vectors_count"] = 0
+            stats["points_count"] = 0
+            stats["vector_size"] = None
+            print(f"Error getting collection stats: {e}")
 
         return stats
 

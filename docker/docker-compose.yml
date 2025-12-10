@@ -11,6 +11,11 @@ services:
     networks:
       - backend
     restart: always
+    environment:
+      # Performance optimization for CPU-only inference
+      - OLLAMA_NUM_PARALLEL=1          # Process one request at a time
+      - OLLAMA_MAX_LOADED_MODELS=1     # Keep only one model in memory
+      - OLLAMA_NUM_THREAD=4            # Use all available threads (2 cores × 2 threads)
     # Resource limits
     deploy:
       resources:
