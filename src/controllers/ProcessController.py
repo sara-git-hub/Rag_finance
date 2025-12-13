@@ -79,9 +79,14 @@ class ProcessController(BaseController):
             # Use default service
             chunks = self.doc_service.chunk_documents(file_content, preserve_metadata=True)
 
-        # Add file_id to metadata
+        # Add file_id and filename to metadata
         for chunk in chunks:
             chunk.metadata["file_id"] = file_id
+            # Extract filename by removing ID prefix (format: {id}_{filename})
+            if "_" in file_id:
+                chunk.metadata["filename"] = "_".join(file_id.split("_")[1:])
+            else:
+                chunk.metadata["filename"] = file_id
 
         return chunks
 

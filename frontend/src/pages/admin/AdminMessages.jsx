@@ -9,8 +9,7 @@ const AdminMessages = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    conversation_id: '',
-    role: ''
+    conversation_id: ''
   });
 
   const columns = [
@@ -51,17 +50,6 @@ const AdminMessages = () => {
       type: 'text',
       placeholder: 'Filtrer par conversation...',
       value: filters.conversation_id
-    },
-    {
-      name: 'role',
-      label: 'Rôle',
-      type: 'select',
-      value: filters.role,
-      options: [
-        { value: 'user', label: 'Utilisateur' },
-        { value: 'assistant', label: 'Assistant' },
-        { value: 'system', label: 'Système' }
-      ]
     }
   ];
 
@@ -69,8 +57,7 @@ const AdminMessages = () => {
     setLoading(true);
     try {
       const conversationId = filters.conversation_id || undefined;
-      const role = filters.role || undefined;
-      const response = await adminAPI.getMessages(currentPage, 20, conversationId, role);
+      const response = await adminAPI.getMessages(currentPage, 20, conversationId);
       setMessages(response.data.messages || []);
       setTotalPages(response.data.total_pages || 1);
     } catch (error) {

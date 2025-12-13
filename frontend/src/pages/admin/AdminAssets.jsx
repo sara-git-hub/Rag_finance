@@ -9,8 +9,7 @@ const AdminAssets = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    project_id: '',
-    asset_type: ''
+    project_id: ''
   });
 
   const columns = [
@@ -37,17 +36,6 @@ const AdminAssets = () => {
       type: 'text',
       placeholder: 'Filtrer par projet...',
       value: filters.project_id
-    },
-    {
-      name: 'asset_type',
-      label: 'Type',
-      type: 'select',
-      value: filters.asset_type,
-      options: [
-        { value: 'pdf', label: 'PDF' },
-        { value: 'docx', label: 'DOCX' },
-        { value: 'txt', label: 'TXT' }
-      ]
     }
   ];
 
@@ -55,8 +43,7 @@ const AdminAssets = () => {
     setLoading(true);
     try {
       const projectId = filters.project_id || undefined;
-      const assetType = filters.asset_type || undefined;
-      const response = await adminAPI.getAssets(currentPage, 20, projectId, assetType);
+      const response = await adminAPI.getAssets(currentPage, 20, projectId);
       setAssets(response.data.assets || []);
       setTotalPages(response.data.total_pages || 1);
     } catch (error) {
