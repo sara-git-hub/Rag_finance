@@ -1,5 +1,6 @@
 fastapi==0.110.2
 uvicorn[standard]==0.29.0
+pyyaml>=6.0.1  # Fix CI/CD: use pre-compiled wheel instead of 6.0
 python-multipart==0.0.9
 python-dotenv==1.0.1
 pydantic-settings>=2.4.0
