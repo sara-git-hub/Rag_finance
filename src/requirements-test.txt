@@ -22,6 +22,9 @@ langchain-huggingface==0.3.1
 langchain-qdrant==0.2.1
 langchain-text-splitters==0.3.11
 
+# Embeddings (required for tests)
+sentence-transformers==2.7.0
+
 # Document Loaders
 PyMuPDF==1.24.3
 
