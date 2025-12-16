@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     CLE_API_CHANGES: str
     CLE_API_CHANGES_2: str
 
+    # Exchange Rates Backfill Configuration
+    ENABLE_INITIAL_BACKFILL: bool = True
+    BACKFILL_DAYS: int = 30
+
     GENERATION_BACKEND: str
     EMBEDDING_BACKEND: str
 

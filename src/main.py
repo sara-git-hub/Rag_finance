@@ -105,13 +105,16 @@ async def startup_span(app: FastAPI):
         "changes_2": settings.CLE_API_CHANGES_2  # Clé de secours
     }
 
-    # Exécuter le backfill initial si nécessaire (90 jours = 3 mois de données)
-    print("Checking if initial backfill is needed...")
-    backfill_result = await run_backfill_if_needed(app.db_client, bam_api_keys, days=90)
-    if backfill_result:
-        print(f"✓ Initial backfill completed: {backfill_result['success_count']} days retrieved")
+    # Exécuter le backfill initial si nécessaire (configurable via ENABLE_INITIAL_BACKFILL)
+    if settings.ENABLE_INITIAL_BACKFILL:
+        print(f"Checking if initial backfill is needed (configured for {settings.BACKFILL_DAYS} days)...")
+        backfill_result = await run_backfill_if_needed(app.db_client, bam_api_keys, days=settings.BACKFILL_DAYS)
+        if backfill_result:
+            print(f"✓ Initial backfill completed: {backfill_result['success_count']} days retrieved")
+        else:
+            print("✓ Backfill skipped - data already exists")
     else:
-        print("✓ Backfill skipped - data already exists")
+        print("⊘ Initial backfill disabled by configuration (ENABLE_INITIAL_BACKFILL=false)")
 
     # Vérifier si les taux du jour sont déjà récupérés
     from datetime import datetime

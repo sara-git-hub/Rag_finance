@@ -36,30 +36,30 @@ cp alembic.example.ini alembic.ini
 
 ```bash
 cd docker
-docker compose up --build -d
+docker-compose up --build -d
 ```
 
 To start only specific services:
 
 ```bash
-docker compose up -d fastapi nginx pgvector qdrant
+docker-compose up -d fastapi nginx pgvector qdrant
 ```
 
 If you encounter connection issues, you may want to start the database services first and let them initialize before starting the application:
 
 ```bash
 # Start databases first
-docker compose up -d pgvector qdrant postgres-exporter
+docker compose-up -d pgvector qdrant postgres-exporter
 # Wait for databases to be healthy
 sleep 30
 # Start the application services
-docker compose up fastapi nginx prometheus grafana node-exporter --build -d
+docker-compose up fastapi nginx prometheus grafana node-exporter --build -d
 ```
 
 In case deleting all containers and volumes is necessary, you can run:
 
 ```bash
-docker compose down -v --remove-orphans
+docker-compose down -v --remove-orphans
 ```
 
 ### 3. Access the services
@@ -168,16 +168,16 @@ If you see connection errors when starting the services:
 
 2. **Restart the FastAPI service** after databases are running:
    ```bash
-   docker compose restart fastapi
+   docker-compose restart fastapi
    ```
 
 3. **Check service status**:
    ```bash
-   docker compose ps
+   docker-compose ps
    ```
 
 4. **View logs** for more details:
    ```bash
-   docker compose logs --tail=100 fastapi
-   docker compose logs --tail=100 pgvector
+   docker-compose logs --tail=100 fastapi
+   docker-compose logs --tail=100 pgvector
    ```

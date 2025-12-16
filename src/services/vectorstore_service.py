@@ -252,6 +252,14 @@ class VectorStoreService:
         """Delete the entire collection"""
         self.vectorstore.client.delete_collection(self.collection_name)
 
+    def close(self):
+        """Close the Qdrant client connection"""
+        try:
+            if hasattr(self.vectorstore, 'client') and self.vectorstore.client:
+                self.vectorstore.client.close()
+        except Exception:
+            pass  # Ignore errors during close
+
     def delete_by_metadata(self, filter_dict: dict) -> bool:
         """
         Delete vectors by metadata filter

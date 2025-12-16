@@ -4,7 +4,7 @@ Tests for RAGService
 
 import pytest
 from langchain_core.documents import Document
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from services import (
     RAGService,
     VectorStoreService,
@@ -20,7 +20,7 @@ class TestRAGServiceStructure:
     @pytest.fixture
     def mock_llm(self, mocker):
         """Mock LLM for testing structure"""
-        mock = mocker.Mock(spec=ChatOpenAI)
+        mock = mocker.Mock(spec=ChatGroq)
         return mock
 
     @pytest.fixture
@@ -48,6 +48,8 @@ class TestRAGServiceStructure:
             vectorstore.delete_collection()
         except:
             pass
+        finally:
+            vectorstore.close()
 
     def test_init(self, vectorstore_with_data, mock_llm):
         """Test RAG service initialization"""
@@ -139,12 +141,14 @@ class TestRAGServiceWithLLM:
             vectorstore.delete_collection()
         except:
             pass
+        finally:
+            vectorstore.close()
 
-    def test_answer(self, vectorstore_with_data, openai_api_key):
+    def test_answer(self, vectorstore_with_data, groq_api_key):
         """Test basic answer generation"""
-        llm = ChatOpenAI(
-            model="gpt-3.5-turbo",
-            api_key=openai_api_key,
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            api_key=groq_api_key,
             temperature=0.7
         )
 
@@ -160,11 +164,11 @@ class TestRAGServiceWithLLM:
         assert isinstance(result["answer"], str)
         assert len(result["answer"]) > 0
 
-    def test_answer_with_sources(self, vectorstore_with_data, openai_api_key):
+    def test_answer_with_sources(self, vectorstore_with_data, groq_api_key):
         """Test answer with source documents"""
-        llm = ChatOpenAI(
-            model="gpt-3.5-turbo",
-            api_key=openai_api_key,
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            api_key=groq_api_key,
             temperature=0.7
         )
 
@@ -181,11 +185,11 @@ class TestRAGServiceWithLLM:
         assert isinstance(result["sources"], list)
         assert len(result["sources"]) > 0
 
-    def test_stream_answer(self, vectorstore_with_data, openai_api_key):
+    def test_stream_answer(self, vectorstore_with_data, groq_api_key):
         """Test streaming answer"""
-        llm = ChatOpenAI(
-            model="gpt-3.5-turbo",
-            api_key=openai_api_key,
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            api_key=groq_api_key,
             temperature=0.7
         )
 
@@ -200,11 +204,11 @@ class TestRAGServiceWithLLM:
         assert len(chunks) > 0
         assert all(isinstance(chunk, str) for chunk in chunks)
 
-    def test_batch_answer(self, vectorstore_with_data, openai_api_key):
+    def test_batch_answer(self, vectorstore_with_data, groq_api_key):
         """Test batch answer generation"""
-        llm = ChatOpenAI(
-            model="gpt-3.5-turbo",
-            api_key=openai_api_key,
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            api_key=groq_api_key,
             temperature=0.7
         )
 
@@ -228,7 +232,7 @@ class TestRAGServiceWithLLM:
 class TestRAGServiceFactory:
     """Test RAG service factory function"""
 
-    def test_create_rag_service_openai(self, test_database_dir, openai_api_key):
+    def test_create_rag_service_groq(self, test_database_dir, groq_api_key):
         """Test creating RAG service with factory"""
         # Create vector store
         embeddings_service = EmbeddingsService(provider="local", model_name="multilingual-mini")
@@ -246,9 +250,9 @@ class TestRAGServiceFactory:
         # Create RAG service
         rag = create_rag_service(
             vectorstore_service=vectorstore,
-            llm_provider="openai",
-            model_name="gpt-3.5-turbo",
-            api_key=openai_api_key,
+            llm_provider="groq",
+            model_name="llama-3.3-70b-versatile",
+            api_key=groq_api_key,
             language="fr"
         )
 
@@ -260,6 +264,8 @@ class TestRAGServiceFactory:
             vectorstore.delete_collection()
         except:
             pass
+        finally:
+            vectorstore.close()
 
     def test_create_rag_service_invalid_provider(self, test_database_dir):
         """Test factory with invalid LLM provider"""
@@ -271,8 +277,11 @@ class TestRAGServiceFactory:
             path=str(test_database_dir)
         )
 
-        with pytest.raises(ValueError, match="Unsupported LLM provider"):
-            create_rag_service(
-                vectorstore_service=vectorstore,
-                llm_provider="invalid_provider"
-            )
+        try:
+            with pytest.raises(ValueError, match="Unsupported LLM provider"):
+                create_rag_service(
+                    vectorstore_service=vectorstore,
+                    llm_provider="invalid_provider"
+                )
+        finally:
+            vectorstore.close()

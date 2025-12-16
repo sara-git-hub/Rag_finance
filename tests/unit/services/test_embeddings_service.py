@@ -132,60 +132,6 @@ class TestEmbeddingsServiceLocal:
         assert vec1 == vec2
 
 
-class TestEmbeddingsServiceOpenAI:
-    """Test suite for EmbeddingsService with OpenAI provider"""
-
-    def test_init_openai(self, openai_api_key):
-        """Test initialization with OpenAI provider"""
-        service = EmbeddingsService(
-            provider="openai",
-            model_name="text-embedding-3-small",
-            api_key=openai_api_key
-        )
-
-        assert service.provider == "openai"
-        assert service.embedding_dimension == 1536
-
-    def test_embed_query_openai(self, openai_api_key):
-        """Test embedding with OpenAI"""
-        service = EmbeddingsService(
-            provider="openai",
-            model_name="text-embedding-3-small",
-            api_key=openai_api_key
-        )
-
-        vector = service.embed_query("Test query")
-
-        assert len(vector) == 1536
-
-
-class TestEmbeddingsServiceCohere:
-    """Test suite for EmbeddingsService with Cohere provider"""
-
-    def test_init_cohere(self, cohere_api_key):
-        """Test initialization with Cohere provider"""
-        service = EmbeddingsService(
-            provider="cohere",
-            model_name="embed-multilingual-v3.0",
-            api_key=cohere_api_key
-        )
-
-        assert service.provider == "cohere"
-        assert service.embedding_dimension == 1024
-
-    def test_embed_query_cohere(self, cohere_api_key):
-        """Test embedding with Cohere"""
-        service = EmbeddingsService(
-            provider="cohere",
-            model_name="embed-multilingual-v3.0",
-            api_key=cohere_api_key
-        )
-
-        vector = service.embed_query("Test query")
-
-        assert len(vector) == 1024
-
-
 class TestEmbeddingsServiceErrors:
     """Test error handling"""
 

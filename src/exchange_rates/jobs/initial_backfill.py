@@ -37,14 +37,14 @@ async def check_if_backfill_needed(db_client) -> bool:
     return False
 
 
-async def run_initial_backfill(db_client, api_keys: dict, days: int = 90):
+async def run_initial_backfill(db_client, api_keys: dict, days: int = 30):
     """
     Récupère les données historiques sur N jours
 
     Args:
         db_client: Database client
         api_keys: Dictionnaire avec les clés API BAM
-        days: Nombre de jours à récupérer (défaut: 90 = 3 mois)
+        days: Nombre de jours à récupérer (défaut: 30 = 1 mois)
     """
     logger.info(f"Starting initial backfill for {days} days...")
 
@@ -67,34 +67,64 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 90):
 
     while current_date <= end_date:
         try:
-            # Récupérer les taux pour cette date
-            rates = bam_client.get_both_rates(current_date)
+            # Variables pour suivre si on a sauvegardé des données
+            eur_saved = False
+            usd_saved = False
 
-            # Sauvegarder MAD/EUR
-            if rates['MAD/EUR']:
-                await model.insert_rate(
-                    currency_pair=CurrencyPair.MAD_EUR,
-                    date=current_date,
-                    achat=rates['MAD/EUR']['achat'],
-                    vente=rates['MAD/EUR']['vente'],
-                    rate_type=RateType.ACTUAL,
-                    source='Bank Al-Maghrib (Backfill)'
-                )
-                logger.debug(f"✓ {current_date} MAD/EUR saved")
+            # Récupérer MAD/EUR
+            # Vérifier d'abord si le taux existe déjà
+            eur_exists = await model.rate_exists(
+                currency_pair=CurrencyPair.MAD_EUR,
+                date=current_date,
+                rate_type=RateType.ACTUAL
+            )
 
-            # Sauvegarder MAD/USD
-            if rates['MAD/USD']:
-                await model.insert_rate(
-                    currency_pair=CurrencyPair.MAD_USD,
-                    date=current_date,
-                    achat=rates['MAD/USD']['achat'],
-                    vente=rates['MAD/USD']['vente'],
-                    rate_type=RateType.ACTUAL,
-                    source='Bank Al-Maghrib (Backfill)'
-                )
-                logger.debug(f"✓ {current_date} MAD/USD saved")
+            if eur_exists:
+                logger.debug(f"⊙ {current_date} MAD/EUR already exists, skipping")
+                eur_saved = True  # Compter comme succès
+            else:
+                rate_eur = bam_client.get_mad_eur_rate(current_date)
+                if rate_eur:
+                    await model.insert_rate(
+                        currency_pair=CurrencyPair.MAD_EUR,
+                        date=current_date,
+                        achat=rate_eur['achat'],
+                        vente=rate_eur['vente'],
+                        rate_type=RateType.ACTUAL,
+                        source='Bank Al-Maghrib (Backfill)'
+                    )
+                    logger.debug(f"✓ {current_date} MAD/EUR saved")
+                    eur_saved = True
 
-            if rates['MAD/EUR'] or rates['MAD/USD']:
+            # Attendre 65 secondes entre les requêtes EUR et USD pour éviter le rate limiting
+            await asyncio.sleep(65)
+
+            # Récupérer MAD/USD
+            # Vérifier d'abord si le taux existe déjà
+            usd_exists = await model.rate_exists(
+                currency_pair=CurrencyPair.MAD_USD,
+                date=current_date,
+                rate_type=RateType.ACTUAL
+            )
+
+            if usd_exists:
+                logger.debug(f"⊙ {current_date} MAD/USD already exists, skipping")
+                usd_saved = True  # Compter comme succès
+            else:
+                rate_usd = bam_client.get_mad_usd_rate(current_date)
+                if rate_usd:
+                    await model.insert_rate(
+                        currency_pair=CurrencyPair.MAD_USD,
+                        date=current_date,
+                        achat=rate_usd['achat'],
+                        vente=rate_usd['vente'],
+                        rate_type=RateType.ACTUAL,
+                        source='Bank Al-Maghrib (Backfill)'
+                    )
+                    logger.debug(f"✓ {current_date} MAD/USD saved")
+                    usd_saved = True
+
+            if eur_saved or usd_saved:
                 success_count += 1
             else:
                 error_count += 1
@@ -105,9 +135,8 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 90):
                 progress = ((current_date - start_date).days / total_days) * 100
                 logger.info(f"Progress: {progress:.1f}% ({success_count} success, {error_count} errors)")
 
-            # Délai de 60 secondes pour respecter les rate limits de l'API BAM
-            # (2 requêtes par jour: EUR + USD)
-            await asyncio.sleep(60)
+            # Délai de 65 secondes avant la prochaine date pour respecter les rate limits de l'API BAM
+            await asyncio.sleep(65)
 
         except Exception as e:
             error_count += 1
@@ -122,36 +151,68 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 90):
                 max_retries = 2
 
                 for retry_attempt in range(1, max_retries + 1):
-                    logger.error(f"⚠ Waiting 60 seconds before retry {retry_attempt}/{max_retries}...")
-                    await asyncio.sleep(60)
+                    logger.error(f"⚠ Waiting 65 seconds before retry {retry_attempt}/{max_retries}...")
+                    await asyncio.sleep(65)
 
                     try:
-                        logger.info(f"↻ Retry {retry_attempt}/{max_retries} for {current_date} after 60s wait...")
-                        rates = bam_client.get_both_rates(current_date)
+                        logger.info(f"↻ Retry {retry_attempt}/{max_retries} for {current_date} after 65s wait...")
 
-                        if rates['MAD/EUR']:
-                            await model.insert_rate(
-                                currency_pair=CurrencyPair.MAD_EUR,
-                                date=current_date,
-                                achat=rates['MAD/EUR']['achat'],
-                                vente=rates['MAD/EUR']['vente'],
-                                rate_type=RateType.ACTUAL,
-                                source='Bank Al-Maghrib (Backfill)'
-                            )
-                            logger.info(f"✓ {current_date} MAD/EUR saved (after retry {retry_attempt})")
+                        # Variables pour suivre le succès
+                        retry_eur_saved = False
+                        retry_usd_saved = False
 
-                        if rates['MAD/USD']:
-                            await model.insert_rate(
-                                currency_pair=CurrencyPair.MAD_USD,
-                                date=current_date,
-                                achat=rates['MAD/USD']['achat'],
-                                vente=rates['MAD/USD']['vente'],
-                                rate_type=RateType.ACTUAL,
-                                source='Bank Al-Maghrib (Backfill)'
-                            )
-                            logger.info(f"✓ {current_date} MAD/USD saved (after retry {retry_attempt})")
+                        # Vérifier et récupérer MAD/EUR
+                        eur_exists = await model.rate_exists(
+                            currency_pair=CurrencyPair.MAD_EUR,
+                            date=current_date,
+                            rate_type=RateType.ACTUAL
+                        )
 
-                        if rates['MAD/EUR'] or rates['MAD/USD']:
+                        if eur_exists:
+                            logger.info(f"⊙ {current_date} MAD/EUR already exists, skipping (retry {retry_attempt})")
+                            retry_eur_saved = True
+                        else:
+                            rate_eur = bam_client.get_mad_eur_rate(current_date)
+                            if rate_eur:
+                                await model.insert_rate(
+                                    currency_pair=CurrencyPair.MAD_EUR,
+                                    date=current_date,
+                                    achat=rate_eur['achat'],
+                                    vente=rate_eur['vente'],
+                                    rate_type=RateType.ACTUAL,
+                                    source='Bank Al-Maghrib (Backfill)'
+                                )
+                                logger.info(f"✓ {current_date} MAD/EUR saved (after retry {retry_attempt})")
+                                retry_eur_saved = True
+
+                        # Attendre entre EUR et USD
+                        await asyncio.sleep(65)
+
+                        # Vérifier et récupérer MAD/USD
+                        usd_exists = await model.rate_exists(
+                            currency_pair=CurrencyPair.MAD_USD,
+                            date=current_date,
+                            rate_type=RateType.ACTUAL
+                        )
+
+                        if usd_exists:
+                            logger.info(f"⊙ {current_date} MAD/USD already exists, skipping (retry {retry_attempt})")
+                            retry_usd_saved = True
+                        else:
+                            rate_usd = bam_client.get_mad_usd_rate(current_date)
+                            if rate_usd:
+                                await model.insert_rate(
+                                    currency_pair=CurrencyPair.MAD_USD,
+                                    date=current_date,
+                                    achat=rate_usd['achat'],
+                                    vente=rate_usd['vente'],
+                                    rate_type=RateType.ACTUAL,
+                                    source='Bank Al-Maghrib (Backfill)'
+                                )
+                                logger.info(f"✓ {current_date} MAD/USD saved (after retry {retry_attempt})")
+                                retry_usd_saved = True
+
+                        if retry_eur_saved or retry_usd_saved:
                             success_count += 1
                             error_count -= 1  # Annuler l'erreur comptée plus haut
                             retry_success = True
@@ -183,7 +244,7 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 90):
     }
 
 
-async def run_backfill_if_needed(db_client, api_keys: dict, days: int = 90):
+async def run_backfill_if_needed(db_client, api_keys: dict, days: int = 30):
     """
     Vérifie si le backfill est nécessaire et l'exécute si besoin
     """

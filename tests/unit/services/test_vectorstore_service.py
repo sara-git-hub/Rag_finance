@@ -35,6 +35,8 @@ class TestVectorStoreServiceQdrant:
             store.delete_collection()
         except:
             pass
+        finally:
+            store.close()
 
     def test_init_qdrant(self, embeddings_service, test_database_dir):
         """Test initialization of Qdrant vector store"""
@@ -45,9 +47,12 @@ class TestVectorStoreServiceQdrant:
             path=str(test_database_dir)
         )
 
-        assert store.provider == "qdrant"
-        assert store.collection_name == "test_init"
-        assert store.vectorstore is not None
+        try:
+            assert store.provider == "qdrant"
+            assert store.collection_name == "test_init"
+            assert store.vectorstore is not None
+        finally:
+            store.close()
 
     def test_add_documents(self, vectorstore, sample_documents):
         """Test adding documents to vector store"""
@@ -129,14 +134,17 @@ class TestVectorStoreServiceQdrant:
             path=str(test_database_dir)
         )
 
-        # Add some documents
-        docs = [Document(page_content="Test")]
-        store.add_documents(docs)
+        try:
+            # Add some documents
+            docs = [Document(page_content="Test")]
+            store.add_documents(docs)
 
-        # Delete
-        store.delete_collection()
+            # Delete
+            store.delete_collection()
 
-        # Should succeed without error
+            # Should succeed without error
+        finally:
+            store.close()
 
 
 class TestVectorStoreServiceErrors:

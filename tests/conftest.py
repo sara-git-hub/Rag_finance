@@ -20,15 +20,14 @@ def test_data_dir():
         shutil.rmtree(test_dir)
 
 
-@pytest.fixture(scope="session")
-def test_database_dir():
-    """Create temporary test database directory"""
-    db_dir = Path("tests/test_database")
+@pytest.fixture
+def test_database_dir(tmp_path):
+    """Create unique temporary test database directory for each test"""
+    # tmp_path is a pytest fixture that provides a unique temporary directory per test
+    db_dir = tmp_path / "test_database"
     db_dir.mkdir(parents=True, exist_ok=True)
     yield db_dir
-    # Cleanup after all tests
-    if db_dir.exists():
-        shutil.rmtree(db_dir)
+    # Cleanup is automatic with tmp_path
 
 
 @pytest.fixture
@@ -85,6 +84,15 @@ def cohere_api_key():
     api_key = os.getenv("COHERE_API_KEY")
     if not api_key:
         pytest.skip("COHERE_API_KEY not set - skipping test requiring API")
+    return api_key
+
+
+@pytest.fixture
+def groq_api_key():
+    """Get Groq API key from environment"""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        pytest.skip("GROQ_API_KEY not set - skipping test requiring API")
     return api_key
 
 

@@ -2,34 +2,47 @@
 
 Suite de tests complète pour le projet Fil Rouge.
 
+## 🎉 Dernière Exécution
+
+✅ **286 tests passés** en 5min 52s | **Couverture: 32%** | **11 modules à 100%**
+
+**Récentes améliorations**:
+- 🔄 Migration OpenAI → Groq pour tests LLM (économies + vitesse)
+- 🔒 Isolation Qdrant via `tmp_path` (plus de verrouillage fichiers)
+- 🔒 Isolation PostgreSQL (`minirag_test` séparée de production)
+- 📁 Centralisation tests dans `tests/` (`src/tests/` supprimé)
+- 🧹 Cleanup automatique avec `vectorstore.close()`
+
 ## 📁 Structure
 
 ```
 tests/
-├── unit/                      # Tests unitaires (238 tests)
-│   ├── services/             # Tests services LangChain
-│   │   ├── test_document_service.py        (20 tests - 100% coverage)
-│   │   ├── test_embeddings_service.py      (35 tests - 100% coverage)
-│   │   ├── test_prompt_service.py          (30 tests - 100% coverage)
-│   │   ├── test_rag_service.py             (23 tests - 46% coverage)
-│   │   └── test_vectorstore_service.py     (20 tests - 68% coverage)
-│   ├── controllers/          # Tests controllers (58 tests)
-│   │   ├── test_base_controller.py         (17 tests - 100% coverage)
-│   │   ├── test_data_controller.py         (20 tests - 100% coverage)
-│   │   ├── test_nlp_controller.py          (11 tests - 33% coverage)
-│   │   ├── test_process_controller.py      (14 tests - 100% coverage)
-│   │   └── test_project_controller.py      (6 tests - 100% coverage)
-│   ├── helpers/              # Tests helpers/utils (16 tests)
-│   │   └── test_auth.py                    (16 tests - 100% coverage)
-│   └── models/               # Tests modèles DB (19 tests)
-│       ├── test_asset_model.py             (7 tests - 100% coverage)
-│       ├── test_chunk_model.py             (6 tests - 100% coverage)
-│       └── test_project_model.py           (6 tests - 100% coverage)
-├── integration/              # Tests d'intégration (à créer)
-│   └── test_routes.py        # Tests API endpoints (à créer)
-├── ml/                       # Tests Machine Learning (à créer)
-│   └── test_lstm_model.py    # Tests LSTM (à créer)
-├── conftest.py               # Fixtures globales
+├── unit/                      # Tests unitaires (286 tests)
+│   ├── services/             # Tests services LangChain (87% coverage)
+│   │   ├── test_document_service.py        (100% coverage ✅)
+│   │   ├── test_embeddings_service.py      (100% coverage ✅)
+│   │   ├── test_prompt_service.py          (100% coverage ✅)
+│   │   ├── test_rag_service.py             (68% coverage 🟡)
+│   │   └── test_vectorstore_service.py     (69% coverage 🟡)
+│   ├── controllers/          # Tests controllers (87% coverage)
+│   │   ├── test_base_controller.py         (100% coverage ✅)
+│   │   ├── test_data_controller.py         (100% coverage ✅)
+│   │   ├── test_nlp_controller.py          (33% coverage 🔴)
+│   │   ├── test_process_controller.py      (100% coverage ✅)
+│   │   └── test_project_controller.py      (100% coverage ✅)
+│   ├── helpers/              # Tests helpers (100% coverage ✅)
+│   │   └── test_auth.py                    (100% coverage ✅)
+│   └── models/               # Tests modèles DB (100% coverage ✅)
+│       ├── test_asset_model.py             (100% coverage ✅)
+│       ├── test_datachunk_model.py         (100% coverage ✅)
+│       ├── test_project_model.py           (100% coverage ✅)
+│       └── test_user_model.py              (100% coverage ✅)
+├── integration/              # Tests d'intégration (1 test - 93% coverage)
+│   ├── conftest.py           # DB test séparée (minirag_test)
+│   └── test_routes_auth.py   # Tests auth endpoints (93% coverage ✅)
+├── ml/                       # Tests Machine Learning (95% coverage ✅)
+│   └── test_lstm_model.py    # Tests LSTM (95% coverage ✅)
+├── conftest.py               # Fixtures globales (tmp_path, groq_api_key, etc.)
 ├── pytest.ini                # Configuration pytest
 ├── ANALYSE_TESTS_ACTUELS.md  # Rapport d'analyse
 └── README.md                 # Ce fichier
@@ -37,19 +50,35 @@ tests/
 
 ## 🚀 Lancer les tests
 
+⚠️ **Important** : Tous les tests sont maintenant centralisés dans `tests/` (le dossier `src/tests` a été supprimé)
+
 ### Tous les tests
 ```bash
+# Depuis la racine du projet
+pytest tests/
+
+# Ou depuis le dossier tests
 cd tests
 pytest
 ```
 
 ### Tests unitaires seulement
 ```bash
+# Depuis la racine
+pytest tests/unit/
+
+# Depuis tests/
+cd tests
 pytest unit/
 ```
 
 ### Tests services LangChain
 ```bash
+# Depuis la racine
+pytest tests/unit/services/
+
+# Depuis tests/
+cd tests
 pytest unit/services/
 ```
 
@@ -81,87 +110,128 @@ pytest --cov --cov-report=html
 ### Tests spécifiques
 ```bash
 # Un fichier
-pytest unit/services/test_rag_service.py
+pytest tests/unit/services/test_rag_service.py
 
 # Une classe
-pytest unit/services/test_rag_service.py::TestRAGService
+pytest tests/unit/services/test_rag_service.py::TestRAGServiceWithLLM
 
 # Un test
-pytest unit/services/test_rag_service.py::TestRAGService::test_answer_with_sources
+pytest tests/unit/services/test_rag_service.py::TestRAGServiceWithLLM::test_answer_with_sources
+```
+
+### Tests nécessitant une clé API
+
+Certains tests RAG nécessitent une clé API Groq :
+
+```bash
+# Définir la clé API Groq
+export GROQ_API_KEY="votre_clé_groq"
+
+# Les tests seront skipped si GROQ_API_KEY n'est pas définie
+pytest tests/unit/services/test_rag_service.py::TestRAGServiceWithLLM
 ```
 
 ## 📊 Couverture Actuelle
 
-| Catégorie | Fichiers | Couverture | Tests | Cible |
-|-----------|----------|------------|-------|-------|
-| **Services (LangChain)** | 5/5 | **82%** | 128 | 80% ✅ |
-| - DocumentService | 1/1 | 100% ✅ | 20 | - |
-| - EmbeddingsService | 1/1 | 100% ✅ | 35 | - |
-| - PromptService | 1/1 | 100% ✅ | 30 | - |
-| - RAGService | 1/1 | 46% | 23 | - |
-| - VectorStoreService | 1/1 | 68% | 20 | - |
-| **Controllers** | 5/5 | **87%** | 58 | 70% ✅ |
-| - BaseController | 1/1 | 100% ✅ | 17 | - |
-| - DataController | 1/1 | 100% ✅ | 20 | - |
-| - ProcessController | 1/1 | 100% ✅ | 14 | - |
-| - ProjectController | 1/1 | 100% ✅ | 6 | - |
-| - NLPController | 1/1 | 33% | 11 | - |
-| **Helpers** | 1/1 | **100%** ✅ | 16 | 80% ✅ |
-| - auth.py | 1/1 | 100% ✅ | 16 | - |
-| **Modèles DB** | 3/4 | **100%** ✅ | 19 | 70% ✅ |
-| - Asset | 1/1 | 100% ✅ | 7 | - |
-| - Chunk | 1/1 | 100% ✅ | 6 | - |
-| - Project | 1/1 | 100% ✅ | 6 | - |
-| - User | 0/1 | 0% | 0 | - |
-| **Routes/Endpoints** | 0/6 | **0%** | 0 | 75% |
-| **ML (LSTM)** | 0/1 | **0%** | 0 | 60% |
-| **TOTAL** | **15/23** | **~21%** | **221** | **75%** |
+**Dernière exécution**: 286 tests passés en 5min 52s ✅
 
-**Légende**: ✅ = Objectif atteint | 🟡 = En cours | ❌ = Non commencé
+| Catégorie | Fichiers | Couverture | Status | Cible |
+|-----------|----------|------------|--------|-------|
+| **Services (LangChain)** | 5/5 | **87%** | 🟢 | 80% ✅ |
+| - DocumentService | 1/1 | 100% ✅ | 🟢 | - |
+| - EmbeddingsService | 1/1 | 100% ✅ | 🟢 | - |
+| - PromptService | 1/1 | 100% ✅ | 🟢 | - |
+| - RAGService | 1/1 | 68% | 🟡 | - |
+| - VectorStoreService | 1/1 | 69% | 🟡 | - |
+| **Controllers** | 5/5 | **87%** | 🟢 | 70% ✅ |
+| - BaseController | 1/1 | 100% ✅ | 🟢 | - |
+| - DataController | 1/1 | 100% ✅ | 🟢 | - |
+| - ProcessController | 1/1 | 100% ✅ | 🟢 | - |
+| - ProjectController | 1/1 | 100% ✅ | 🟢 | - |
+| - NLPController | 1/1 | 33% | 🔴 | - |
+| **Helpers** | 2/2 | **100%** | 🟢 | 80% ✅ |
+| - auth.py | 1/1 | 100% ✅ | 🟢 | - |
+| - config.py | 1/1 | 100% ✅ | 🟢 | - |
+| **Modèles DB Schemes** | 7/7 | **100%** | 🟢 | 70% ✅ |
+| - asset.py | 1/1 | 100% ✅ | 🟢 | - |
+| - datachunk.py | 1/1 | 100% ✅ | 🟢 | - |
+| - project.py | 1/1 | 100% ✅ | 🟢 | - |
+| - user.py | 1/1 | 100% ✅ | 🟢 | - |
+| - conversation.py | 1/1 | 100% ✅ | 🟢 | - |
+| - exchange_rate.py | 1/1 | 100% ✅ | 🟢 | - |
+| - minirag_base.py | 1/1 | 100% ✅ | 🟢 | - |
+| **Routes/Endpoints** | 1/6 | **15%** | 🔴 | 75% |
+| - auth.py | 1/1 | 93% ✅ | 🟢 | - |
+| - admin.py, conversation.py, data.py, nlp.py, base.py | 0/5 | 0% | 🔴 | - |
+| **ML (LSTM)** | 1/1 | **95%** | 🟢 | 60% ✅ |
+| - lstm_model.py | 1/1 | 95% ✅ | 🟢 | - |
+| **Exchange Rates** | 0/7 | **0%** | 🔴 | 60% |
+| - jobs, models, routes, services | 0/7 | 0% | 🔴 | - |
+| **Models (Legacy)** | 1/6 | **7%** | 🔴 | 70% |
+| - UserModel.py | 1/1 | 41% | 🔴 | - |
+| - Asset, Chunk, Conversation, Project, Base | 0/5 | 0% | 🔴 | - |
+| **TOTAL** | **22/34** | **32%** | 🟡 | **75%** |
+
+**Légende**: 🟢 = Excellent (≥80%) | 🟡 = Moyen (40-79%) | 🔴 = Faible (<40%)
 
 ## 🎯 Priorités
 
-### ✅ Phase 1 - Complétée (128 tests)
-- ✅ Tests services LangChain (128 tests, 82% couverture)
-  - DocumentService: 20 tests, 100% ✅
-  - EmbeddingsService: 35 tests, 100% ✅
-  - PromptService: 30 tests, 100% ✅
-  - RAGService: 23 tests, 46%
-  - VectorStoreService: 20 tests, 68%
-- ✅ Fixtures de base (conftest.py)
+### ✅ Phase 1 - Complétée (286 tests)
+**Services LangChain** (87% couverture) ✅
+- DocumentService: 100% ✅
+- EmbeddingsService: 100% ✅
+- PromptService: 100% ✅
+- RAGService: 68% 🟡
+- VectorStoreService: 69% 🟡
 
-### ✅ Phase 2 - Complétée (93 tests)
-- ✅ Tests Controllers (58 tests, 87% couverture)
-  - BaseController: 17 tests, 100% ✅
-  - DataController: 20 tests, 100% ✅
-  - ProcessController: 14 tests, 100% ✅
-  - ProjectController: 6 tests, 100% ✅
-  - NLPController: 11 tests, 33%
-- ✅ Tests Helpers (16 tests, 100% couverture)
-  - auth.py: 16 tests, 100% ✅
-- ✅ Tests Modèles DB (19 tests, 100% couverture)
-  - Asset: 7 tests, 100% ✅
-  - Chunk: 6 tests, 100% ✅
-  - Project: 6 tests, 100% ✅
+**Controllers** (87% couverture) ✅
+- BaseController: 100% ✅
+- DataController: 100% ✅
+- ProcessController: 100% ✅
+- ProjectController: 100% ✅
+- NLPController: 33% 🔴
 
-### 🔴 Phase 3 - PRIORITAIRE
-1. **Tests Endpoints API** (integration/) - 0% couverture
-   - Authentification (login, register, JWT)
-   - Upload et traitement fichiers
-   - RAG Q&A
-   - Admin CRUD
-   - Gestion projets
+**Helpers** (100% couverture) ✅
+- auth.py: 100% ✅
+- config.py: 100% ✅
 
-2. **Tests Machine Learning** (ml/) - 0% couverture
-   - LSTM Exchange Rates
-   - Prédictions
-   - Entraînement modèle
+**Modèles DB Schemes** (100% couverture) ✅
+- Tous les schemes: 100% ✅
 
-### 🟡 Phase 4 - Amélioration Continue
-- Améliorer RAGService (46% → 80%)
-- Améliorer VectorStoreService (68% → 80%)
-- Améliorer NLPController (33% → 70%)
-- Ajouter tests User model
+**ML** (95% couverture) ✅
+- lstm_model.py: 95% ✅
+
+**Routes** (15% couverture partielle)
+- auth.py: 93% ✅
+- Autres routes: 0% 🔴
+
+### 🔴 Phase 2 - PRIORITAIRE (Prochaines étapes)
+
+**1. Tests Routes/Endpoints API** - 0% couverture
+- admin.py (247 lignes non testées)
+- conversation.py (111 lignes)
+- data.py (104 lignes)
+- nlp.py (91 lignes)
+- base.py (8 lignes)
+- Target: ~100 tests, 75% couverture
+
+**2. Tests Exchange Rates** - 0% couverture
+- jobs/ (fetch_rates_job, initial_backfill, scheduler)
+- models/ExchangeRateModel.py
+- routes/exchange_routes.py
+- services/ (bam_api_client, prediction_service)
+- Target: ~60 tests, 60% couverture
+
+**3. Tests Models (Legacy)** - 7% couverture
+- AssetModel, ChunkModel, ConversationModel, ProjectModel
+- Améliorer UserModel (41% → 80%)
+- Target: ~30 tests, 70% couverture
+
+### 🟡 Phase 3 - Amélioration Continue
+- RAGService: 68% → 80% (+12%)
+- VectorStoreService: 69% → 80% (+11%)
+- NLPController: 33% → 70% (+37%)
+- auth.py: 93% → 100% (+7%)
 
 ## 🔄 CI/CD - Intégration Continue
 
@@ -210,6 +280,26 @@ pytest unit/ -v --cov=../src --cov-report=xml --cov-report=term-missing
 ls -lh coverage.xml
 ```
 
+## 🛡️ Isolation des Bases de Données
+
+Les tests sont complètement isolés de la production :
+
+### Qdrant (Vector Store)
+- ✅ **Isolation complète** : Chaque test utilise `tmp_path` (répertoire temporaire unique)
+- ✅ **Pas de conflit** : Aucun verrouillage de fichiers entre tests
+- ✅ **Cleanup automatique** : `vectorstore.close()` appelé dans tous les fixtures
+- ✅ **Production protégée** : Aucune connexion à `http://localhost:6333`
+
+### PostgreSQL
+- ✅ **Base de test séparée** : `minirag_test` (production : `minirag`)
+- ✅ **Isolation totale** : Les tests n'accèdent jamais à la base de production
+- ✅ **Cleanup automatique** : Tables créées et supprimées par test
+
+### LLM Provider
+- ✅ **Tests avec Groq** : API Groq gratuite pour tests LLM (llama-3.3-70b-versatile)
+- ✅ **Tests mockés** : OpenAI et Cohere testés avec mocks (pas de vraie API)
+- ✅ **Embeddings locaux** : HuggingFace uniquement (aucune API externe)
+
 ## 🔧 Fixtures Disponibles
 
 ### Fixtures globales (conftest.py)
@@ -220,12 +310,24 @@ def test_data_dir():
     """Répertoire temporaire pour tests"""
 
 @pytest.fixture
+def test_database_dir(tmp_path):
+    """Répertoire unique par test pour Qdrant (isolation complète)"""
+
+@pytest.fixture
 def sample_documents():
     """Documents de test LangChain"""
 
 @pytest.fixture
+def groq_api_key():
+    """Clé API Groq pour tests LLM (skip si absente)"""
+
+@pytest.fixture
 def openai_api_key():
-    """Clé API OpenAI (skip si absente)"""
+    """Clé API OpenAI (utilisée uniquement dans tests mockés)"""
+
+@pytest.fixture
+def cohere_api_key():
+    """Clé API Cohere (utilisée uniquement dans tests mockés)"""
 
 @pytest.fixture
 def test_project_id():
@@ -347,49 +449,65 @@ def test_something():
 
 ## 📈 Résumé des Accomplissements
 
-### ✅ Tests Créés: 238 tests au total
+### ✅ Tests Créés: 286 tests au total
 
-**Phase 1** (128 tests - Services):
-- DocumentService: 20 tests → 100% couverture ✅
-- EmbeddingsService: 35 tests → 100% couverture ✅
-- PromptService: 30 tests → 100% couverture ✅
-- RAGService: 23 tests → 46% couverture
-- VectorStoreService: 20 tests → 68% couverture
+**Couverture Globale**: 32% (22/34 modules testés)
 
-**Phase 2** (93 tests - Controllers + Helpers + Models):
-- Controllers: 58 tests → 87% couverture ✅
-  - BaseController, DataController, ProcessController, ProjectController: 100% ✅
-  - NLPController: 33%
-- Helpers (auth): 16 tests → 100% couverture ✅
-- Models DB: 19 tests → 100% couverture ✅
+**Modules 100% couverts** (11 modules):
+- ✅ Services: DocumentService, EmbeddingsService, PromptService
+- ✅ Controllers: Base, Data, Process, Project
+- ✅ Helpers: auth.py, config.py
+- ✅ DB Schemes: Tous les 7 schemes (asset, datachunk, project, user, conversation, exchange_rate, minirag_base)
 
-**CI/CD**:
+**Modules excellents ≥90%** (2 modules):
+- ✅ ML: lstm_model (95%)
+- ✅ Routes: auth (93%)
+
+**Modules moyens 60-89%** (2 modules):
+- 🟡 RAGService: 68%
+- 🟡 VectorStoreService: 69%
+
+**Améliorations réalisées**:
+- 🎯 Migration OpenAI → Groq pour tests LLM
+- 🎯 Isolation Qdrant avec tmp_path (fini verrouillage fichiers)
+- 🎯 Isolation PostgreSQL (minirag_test séparée de production)
+- 🎯 Centralisation tests dans `tests/` (suppression `src/tests/`)
+- 🎯 Cleanup automatique avec `vectorstore.close()`
+
+**Infrastructure**:
 - ✅ GitHub Actions workflow configuré
 - ✅ Tests automatiques sur push/PR
 - ✅ Rapports de couverture automatiques
-- ✅ Documentation complète (README.md)
+- ✅ Documentation complète et à jour
 
-### 🎯 Prochaines Étapes
+### 🎯 Prochaines Étapes (pour atteindre 75%)
 
-**Phase 3 - Tests d'Intégration**:
-1. Tests API endpoints (routes/)
-   - Authentification, Upload, RAG, Admin
-   - Target: ~50 tests, 75% couverture
+**Phase 2 - Routes & Exchange Rates** (~160 tests):
+1. Routes API (admin, conversation, data, nlp, base)
+   - Target: ~100 tests, 75% couverture
+2. Exchange Rates (jobs, models, routes, services)
+   - Target: ~60 tests, 60% couverture
 
-2. Tests ML (LSTM)
-   - Prédictions, Entraînement
-   - Target: ~20 tests, 60% couverture
+**Phase 3 - Models Legacy** (~30 tests):
+- AssetModel, ChunkModel, ConversationModel, ProjectModel
+- Améliorer UserModel: 41% → 80%
+- Target: 70% couverture
 
-**Phase 4 - Amélioration**:
-- RAGService: 46% → 80%
-- VectorStoreService: 68% → 80%
+**Phase 4 - Amélioration Continue**:
+- RAGService: 68% → 80%
+- VectorStoreService: 69% → 80%
 - NLPController: 33% → 70%
-- User model tests
+- auth.py: 93% → 100%
 
-**Objectif Final**: 75% de couverture globale
+**Objectif Final**: 75% de couverture globale (~476 tests)
 
 ---
 
-**Dernière mise à jour**: 2025-12-13
-**Total Tests**: 238 (222 passés, 16 nécessitent clés API)
-**Couverture**: ~21% globale | 100% sur 8 modules critiques
+**Dernière mise à jour**: 2025-12-15
+**Total Tests**: 286 tests passés (tous isolés de la production) ✅
+**Temps d'exécution**: 5min 52s
+**LLM Provider**: Groq (llama-3.3-70b-versatile) pour tests réels
+**Embeddings**: Local HuggingFace uniquement
+**Couverture Globale**: 32% (22/34 modules) | 100% sur 11 modules critiques ✅
+**Isolation**: ✅ Qdrant (tmp_path) | ✅ PostgreSQL (minirag_test)
+**Structure**: ✅ Tous les tests centralisés dans `tests/` (src/tests supprimé)
