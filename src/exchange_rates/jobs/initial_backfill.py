@@ -95,9 +95,8 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 30):
                     )
                     logger.debug(f"✓ {current_date} MAD/EUR saved")
                     eur_saved = True
-
-            # Attendre 65 secondes entre les requêtes EUR et USD pour éviter le rate limiting
-            await asyncio.sleep(65)
+                    # Attendre seulement si on a fait une requête API
+                    await asyncio.sleep(45)
 
             # Récupérer MAD/USD
             # Vérifier d'abord si le taux existe déjà
@@ -135,8 +134,9 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 30):
                 progress = ((current_date - start_date).days / total_days) * 100
                 logger.info(f"Progress: {progress:.1f}% ({success_count} success, {error_count} errors)")
 
-            # Délai de 65 secondes avant la prochaine date pour respecter les rate limits de l'API BAM
-            await asyncio.sleep(65)
+            # Délai avant la prochaine date (seulement si on a fait au moins une requête API)
+            if not eur_exists or not usd_exists:
+                await asyncio.sleep(45)
 
         except Exception as e:
             error_count += 1
@@ -151,11 +151,11 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 30):
                 max_retries = 2
 
                 for retry_attempt in range(1, max_retries + 1):
-                    logger.error(f"⚠ Waiting 65 seconds before retry {retry_attempt}/{max_retries}...")
-                    await asyncio.sleep(65)
+                    logger.error(f"⚠ Waiting 45 seconds before retry {retry_attempt}/{max_retries}...")
+                    await asyncio.sleep(45)
 
                     try:
-                        logger.info(f"↻ Retry {retry_attempt}/{max_retries} for {current_date} after 65s wait...")
+                        logger.info(f"↻ Retry {retry_attempt}/{max_retries} for {current_date} after 45s wait...")
 
                         # Variables pour suivre le succès
                         retry_eur_saved = False
@@ -184,9 +184,8 @@ async def run_initial_backfill(db_client, api_keys: dict, days: int = 30):
                                 )
                                 logger.info(f"✓ {current_date} MAD/EUR saved (after retry {retry_attempt})")
                                 retry_eur_saved = True
-
-                        # Attendre entre EUR et USD
-                        await asyncio.sleep(65)
+                                # Attendre seulement si on a fait une requête API
+                                await asyncio.sleep(45)
 
                         # Vérifier et récupérer MAD/USD
                         usd_exists = await model.rate_exists(

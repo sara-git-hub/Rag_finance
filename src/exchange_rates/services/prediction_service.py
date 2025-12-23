@@ -127,6 +127,7 @@ class PredictionService:
             mse=metrics['mse'],
             rmse=metrics['rmse'],
             mape=metrics['mape'],
+            r2=metrics['r2'],
             training_start_date=df['date'].min(),
             training_end_date=df['date'].max(),
             training_samples=len(df)
@@ -149,6 +150,10 @@ class PredictionService:
             currency_pair=currency_pair.value,
             metric_type="mape"
         ).set(metrics['mape'])
+        MODEL_ACCURACY_METRICS.labels(
+            currency_pair=currency_pair.value,
+            metric_type="r2"
+        ).set(metrics['r2'])
 
         logger.info(f"Model trained and saved to {model_path}")
 

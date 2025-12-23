@@ -13,14 +13,14 @@ from langchain_core.documents import Document
 class ProcessController(BaseController):
     """Controller pour le traitement de documents avec LangChain"""
 
-    def __init__(self, project_id: str, chunk_size: int = 1000, chunk_overlap: int = 200):
+    def __init__(self, project_id: str, chunk_size: int = 800, chunk_overlap: int = 160):
         """
         Initialize ProcessController
 
         Args:
             project_id: ID du projet
-            chunk_size: Taille des chunks (défaut: 1000)
-            chunk_overlap: Chevauchement entre chunks (défaut: 200)
+            chunk_size: Taille des chunks (défaut: 800)
+            chunk_overlap: Chevauchement entre chunks (défaut: 160)
         """
         super().__init__()
 

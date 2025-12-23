@@ -325,6 +325,7 @@ class TestExchangeRateLSTMTraining:
         assert 'mse' in metrics
         assert 'rmse' in metrics
         assert 'mape' in metrics
+        assert 'r2' in metrics
         assert metrics['mae'] >= 0
         assert metrics['mse'] >= 0
 
@@ -340,7 +341,7 @@ class TestExchangeRateLSTMTraining:
         metrics = model.train(data, epochs=3, verbose=0)
 
         # Assert
-        expected_keys = ['mae', 'mse', 'rmse', 'mape', 'epochs_trained', 'final_loss', 'final_val_loss']
+        expected_keys = ['mae', 'mse', 'rmse', 'mape', 'r2', 'epochs_trained', 'final_loss', 'final_val_loss', 'validation_samples']
         for key in expected_keys:
             assert key in metrics
             assert isinstance(metrics[key], (int, float))

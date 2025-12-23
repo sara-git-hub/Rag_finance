@@ -15,6 +15,7 @@ const AdminConversations = () => {
   const columns = [
     { key: 'conversation_id', label: 'ID' },
     { key: 'project_id', label: 'Projet ID' },
+    { key: 'user_id', label: 'Utilisateur ID' },
     {
       key: 'message_count',
       label: 'Messages',

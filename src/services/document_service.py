@@ -17,8 +17,8 @@ class DocumentService:
     def __init__(
         self,
         project_path: str,
-        chunk_size: int = 1000,
-        chunk_overlap: int = 200,
+        chunk_size: int = 800,
+        chunk_overlap: int = 160,
         separators: Optional[List[str]] = None
     ):
         """
@@ -26,8 +26,8 @@ class DocumentService:
 
         Args:
             project_path: Path to project directory
-            chunk_size: Size of text chunks (default: 1000 chars)
-            chunk_overlap: Overlap between chunks (default: 200 chars)
+            chunk_size: Size of text chunks (default: 800 chars)
+            chunk_overlap: Overlap between chunks (default: 160 chars)
             separators: List of separators for splitting (default: ["\n\n", "\n", " ", ""])
         """
         self.project_path = project_path

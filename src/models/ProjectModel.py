@@ -24,6 +24,15 @@ class ProjectModel(BaseDataModel):
         
         return project
 
+    async def get_project(self, project_id: str):
+        """Get project without creating it if it doesn't exist"""
+        async with self.db_client() as session:
+            async with session.begin():
+                query = select(Project).where(Project.project_id == project_id)
+                result = await session.execute(query)
+                project = result.scalar_one_or_none()
+                return project
+
     async def get_project_or_create_one(self, project_id: str, project_language: str = "fr"):
         async with self.db_client() as session:
             async with session.begin():

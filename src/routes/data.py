@@ -272,15 +272,18 @@ async def get_project_language(request: Request, project_id: int,
         db_client=request.app.db_client
     )
 
-    project = await project_model.get_project_or_create_one(
-        project_id=project_id
-    )
+    project = await project_model.get_project(project_id=project_id)
 
+    # If project doesn't exist yet, return default language
     if not project:
         return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
             content={
-                "signal": ResponseSignal.PROJECT_NOT_FOUND_ERROR.value
+                "signal": "PROJECT_LANGUAGE_RETRIEVED",
+                "project_id": project_id,
+                "project_name": f"Project {project_id}",
+                "language": "fr",
+                "file_count": 0,
+                "can_change_language": True
             }
         )
 
@@ -312,6 +315,7 @@ async def update_project_language(request: Request, project_id: int,
     """
     Update the language of a specific project (admin only)
     Language can only be changed if:
+    - The project doesn't exist yet (will be created with chosen language)
     - The project has no files yet (first upload)
     - OR the project has no more files
     Supported languages: fr (French), en (English), ar (Arabic)
@@ -319,6 +323,24 @@ async def update_project_language(request: Request, project_id: int,
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
     )
+
+    # Check if project exists
+    project = await project_model.get_project(project_id=project_id)
+
+    # If project doesn't exist, create it with the chosen language
+    if not project:
+        project = await project_model.get_project_or_create_one(
+            project_id=project_id,
+            project_language=language_request.language
+        )
+        return JSONResponse(
+            content={
+                "signal": "PROJECT_LANGUAGE_UPDATED",
+                "project_id": project.project_id,
+                "language": project.project_language,
+                "message": f"Project created with language {language_request.language}"
+            }
+        )
 
     # Check if project has files
     asset_model = await AssetModel.create_instance(
@@ -345,14 +367,6 @@ async def update_project_language(request: Request, project_id: int,
         project_id=project_id,
         language=language_request.language
     )
-
-    if not project:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "signal": ResponseSignal.PROJECT_NOT_FOUND_ERROR.value
-            }
-        )
 
     return JSONResponse(
         content={

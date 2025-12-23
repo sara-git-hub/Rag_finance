@@ -78,7 +78,8 @@ class NLPController(BaseController):
             return self._vectorstores[project_id]
 
         # Prepare config based on provider
-        config = {"distance": "cosine"}
+        #config = {"distance": "cosine"}
+        config = {"distance": self.app_settings.VECTOR_DB_DISTANCE_METHOD or "cosine"}
 
         if self.vector_db_backend == "pgvector":
             # For PGVector, use connection_string

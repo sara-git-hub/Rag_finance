@@ -247,37 +247,70 @@ Le projet utilise GitHub Actions pour l'exécution automatique des tests:
 
 **Exécution**:
 1. Configuration Python 3.12
-2. Installation des dépendances (`requirements.txt`)
-3. Exécution des tests unitaires avec pytest
-4. Génération du rapport de couverture (XML)
-5. Upload vers Codecov (optionnel, nécessite `CODECOV_TOKEN`)
-6. Commentaire automatique sur les PR avec le % de couverture
+2. Installation des dépendances lightweight (`src/requirements-test.txt`)
+3. Création d'un fichier `.env` de test avec valeurs mock
+4. Exécution des tests unitaires compatibles CI/CD (131 tests)
+5. Génération du rapport de couverture (XML)
+6. Upload vers Codecov (optionnel, nécessite `CODECOV_TOKEN`)
+7. Commentaire automatique sur les PR avec le % de couverture
 
-**Voir les résultats**:
-- Onglet **Actions** sur GitHub
-- Badge de statut sur les PR
-- Rapport de couverture commenté sur chaque PR
+**Tests CI/CD vs Tests Locaux**:
+
+| Environnement | Tests | Durée | Packages |
+|---------------|-------|-------|----------|
+| **CI/CD (GitHub Actions)** | 131 tests | ~11s | Lightweight (requirements-test.txt) |
+| **Local (Docker)** | 286 tests | ~6min | Complets (requirements.txt) |
+
+**Tests exclus du CI/CD** (contraintes espace disque 14GB):
+- ❌ Tests PostgreSQL: `integration/`, `unit/models/`
+- ❌ Tests ML: `unit/services/test_embeddings_service.py`, `unit/services/test_rag_service.py`, `unit/services/test_vectorstore_service.py`
+- ❌ Packages lourds: torch (~3GB), tensorflow (~500MB), sentence-transformers
+
+**Tests inclus dans CI/CD**:
+- ✅ `unit/services/test_document_service.py`
+- ✅ `unit/services/test_prompt_service.py`
+- ✅ `unit/controllers/` (tous)
+- ✅ `unit/helpers/` (tous)
 
 **Commandes exécutées**:
 ```bash
 cd tests
-pytest unit/ -v --cov=../src --cov-report=xml --cov-report=term-missing
+pytest unit/services/test_document_service.py unit/services/test_prompt_service.py unit/controllers/ unit/helpers/ -v --cov=../src --cov-report=xml --cov-report=term-missing
 ```
+
+**Voir les résultats**:
+- Onglet **Actions** sur GitHub
+- Badge de statut sur les PR (vert ✅ si 131 tests passent)
+- Rapport de couverture commenté sur chaque PR
 
 ### Configuration Locale
 
-Pour tester le workflow localement avant de push:
+Pour tester le workflow CI/CD localement avant de push:
 
 ```bash
-# Installer les dépendances
-pip install -r requirements.txt
+# Installer les dépendances lightweight
+pip install -r src/requirements-test.txt
+
+# Créer le fichier .env de test (voir .github/workflows/unit-tests.yml pour les variables)
+cat > src/.env << 'EOF'
+APP_NAME=TestApp
+APP_VERSION=1.0.0
+SECRET_KEY=test-secret-key
+# ... (voir workflow pour la liste complète)
+EOF
 
 # Lancer les tests comme le CI/CD
 cd tests
-pytest unit/ -v --cov=../src --cov-report=xml --cov-report=term-missing
+pytest unit/services/test_document_service.py unit/services/test_prompt_service.py unit/controllers/ unit/helpers/ -v --cov=../src --cov-report=xml --cov-report=term-missing
 
 # Vérifier le fichier coverage.xml généré
 ls -lh coverage.xml
+```
+
+**Pour lancer TOUS les tests (286) localement avec Docker**:
+```bash
+# Depuis la machine hôte
+docker exec fastapi bash -c "cd ../tests && pytest -v --cov=../src --cov-report=term-missing"
 ```
 
 ## 🛡️ Isolation des Bases de Données

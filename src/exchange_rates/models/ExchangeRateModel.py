@@ -286,6 +286,7 @@ class ExchangeRateModel:
         mse: float,
         rmse: float,
         mape: float,
+        r2: float,
         training_start_date: date,
         training_end_date: date,
         training_samples: int
@@ -305,6 +306,7 @@ class ExchangeRateModel:
                     mse=mse,
                     rmse=rmse,
                     mape=mape,
+                    r2=r2,
                     training_start_date=training_start_date,
                     training_end_date=training_end_date,
                     training_samples=training_samples

@@ -69,8 +69,8 @@
 | `/api/v1/data/project/{id}/language` | PUT (Admin) | Modifier langue (FR/EN/AR) |
 
 **Paramètres processing** :
-- `chunk_size` : Taille des chunks (défaut : 1000)
-- `overlap_size` : Chevauchement (défaut : 200)
+- `chunk_size` : Taille des chunks (défaut : 800)
+- `overlap_size` : Chevauchement (défaut : 160)
 - `do_reset=1` : Supprime vecteurs + chunks avant reprocessing
 
 ### 1.3 NLP Router - Pipeline RAG
@@ -374,8 +374,8 @@ prompt = ChatPromptTemplate.from_messages([
 **Chunking intelligent** :
 ```python
 RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200,
+    chunk_size=800,
+    chunk_overlap=160,
     separators=["\n\n", "\n", ". ", " ", ""]
 )
 ```
@@ -519,12 +519,12 @@ model.compile(optimizer='adam', loss='mse')
 
 ### Scheduler APScheduler
 
-**Job quotidien** : Fetch taux Bank Al-Maghrib à 18h00
+**Job quotidien** : Fetch taux Bank Al-Maghrib à 09h00
 ```python
 scheduler.add_job(
     func=fetch_rates_from_api,
     trigger="cron",
-    hour=18, minute=0,
+    hour=9, minute=0,
     id="daily_rates_fetch"
 )
 ```
@@ -557,7 +557,7 @@ scheduler.add_job(
    → ProcessController.process_file()
    → DocumentService.load_document() (PyMuPDFLoader)
    → DocumentService.chunk_documents() (RecursiveTextSplitter)
-      • chunk_size=1000, overlap=200
+      • chunk_size=800, overlap=160
       • separators=["\n\n", "\n", ". ", " ", ""]
    → ChunkModel.insert_many_chunks() → PostgreSQL
 

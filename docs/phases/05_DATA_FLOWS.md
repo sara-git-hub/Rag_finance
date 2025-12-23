@@ -180,8 +180,8 @@ User    Frontend    FastAPI    ProcessController    DocumentService    ChunkMode
 **RecursiveCharacterTextSplitter** :
 ```python
 splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,         # Taille cible
-    chunk_overlap=200,       # Chevauchement
+    chunk_size=800,          # Taille cible
+    chunk_overlap=160,       # Chevauchement
     separators=["\n\n", "\n", ". ", " ", ""]  # Ordre de priorité
 )
 ```

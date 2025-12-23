@@ -802,8 +802,8 @@ useEffect(() => {
 - Input Project ID
 - Sélection fichier à traiter (dropdown)
 - Paramètres chunking :
-  - `chunk_size` (défaut: 1000)
-  - `overlap_size` (défaut: 200)
+  - `chunk_size` (défaut: 800)
+  - `overlap_size` (défaut: 160)
 - Checkbox "Reset" (supprimer chunks existants)
 - Bouton "Lancer traitement"
 - Logs résultats (nombre chunks créés)

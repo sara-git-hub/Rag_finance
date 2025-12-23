@@ -363,15 +363,15 @@ curl -X POST \
 **Request Body** :
 ```json
 {
-  "chunk_size": 1000,
-  "overlap_size": 200,
+  "chunk_size": 800,
+  "overlap_size": 160,
   "do_reset": false
 }
 ```
 
 **Parameters** :
-- `chunk_size` (int, default: 1000) : Taille des chunks en caractères
-- `overlap_size` (int, default: 200) : Chevauchement entre chunks
+- `chunk_size` (int, default: 800) : Taille des chunks en caractères
+- `overlap_size` (int, default: 160) : Chevauchement entre chunks
 - `do_reset` (bool, default: false) : Si `true`, supprime les chunks existants avant reprocessing
 
 **Response (200 OK)** :
@@ -387,7 +387,7 @@ curl -X POST \
 ```
 1. Load PDF files (PyMuPDF)
 2. Extract text per page
-3. Split with RecursiveCharacterTextSplitter (chunk_size=1000, overlap=200)
+3. Split with RecursiveCharacterTextSplitter (chunk_size=800, overlap=160)
 4. Store chunks in PostgreSQL (datachunks table)
 5. Generate metadata (page_number, asset_id)
 ```
@@ -1205,7 +1205,7 @@ curl -X POST http://localhost:8000/api/v1/data/upload/1?language=fr \
 curl -X POST http://localhost:8000/api/v1/data/process/1 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"chunk_size":1000,"overlap_size":200,"do_reset":false}'
+  -d '{"chunk_size":800,"overlap_size":160,"do_reset":false}'
 
 # 4. Index
 curl -X POST http://localhost:8000/api/v1/nlp/index/push/1 \

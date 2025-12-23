@@ -40,9 +40,9 @@ const AdminExchangeRates = () => {
     setLoading(true);
     setTrainResult(null);
     try {
-      const response = await adminAPI.trainExchangeModel(selectedPair, 365);
+      const response = await adminAPI.trainExchangeModel(selectedPair, 175);
       setTrainResult(response.data.data);
-      alert(`Modèle ${selectedPair} entraîné avec succès!\nMAE: ${response.data.data.metrics.mae.toFixed(4)}\nRMSE: ${response.data.data.metrics.rmse.toFixed(4)}`);
+      alert(`Modèle ${selectedPair} entraîné avec succès!\nMAE: ${response.data.data.metrics.mae.toFixed(4)}\nRMSE: ${response.data.data.metrics.rmse.toFixed(4)}\nR²: ${response.data.data.metrics.r2.toFixed(4)}`);
     } catch (error) {
       console.error('Error training model:', error);
       alert('Erreur lors de l\'entraînement du modèle');
@@ -201,7 +201,6 @@ const AdminExchangeRates = () => {
             <ul className="text-sm text-gray-700 space-y-1">
               <li>• Le scheduler récupère automatiquement les taux tous les jours à 9h (heure de Casablanca)</li>
               <li>• Le modèle LSTM utilise 30 jours d'historique pour prédire les 7 prochains jours</li>
-              <li>• Entraînez le modèle avec au moins 1 an de données pour de meilleures performances</li>
               <li>• Les prédictions sont sauvegardées en base de données pour consultation par les utilisateurs</li>
             </ul>
           </div>

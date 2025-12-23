@@ -15,8 +15,8 @@ class TestProcessController:
     def mock_document_service(self):
         """Mock DocumentService"""
         mock = Mock()
-        mock.chunk_size = 1000
-        mock.chunk_overlap = 200
+        mock.chunk_size = 800
+        mock.chunk_overlap = 160
         return mock
 
     @pytest.fixture
@@ -50,8 +50,8 @@ class TestProcessController:
                 # Vérifier que DocumentService a été appelé avec les bons params
                 mock_ds.assert_called_once()
                 call_kwargs = mock_ds.call_args[1]
-                assert call_kwargs['chunk_size'] == 1000
-                assert call_kwargs['chunk_overlap'] == 200
+                assert call_kwargs['chunk_size'] == 800
+                assert call_kwargs['chunk_overlap'] == 160
 
     def test_initialization_custom_params(self):
         """Test initialisation avec paramètres personnalisés"""

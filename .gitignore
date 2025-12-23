@@ -44,9 +44,9 @@ assets/database/
 # Frontend
 node_modules/
 
-# Documentation files (optional - décommentez si besoin)
-# *.docx
-# *.pdf
-# *.xlsx
-# *.rtf
-# *.csv
+Documentation files
+*.docx
+*.pdf
+*.xlsx
+*.rtf
+*.csv

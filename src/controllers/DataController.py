@@ -50,6 +50,6 @@ class DataController(BaseController):
         cleaned_file_name = re.sub(r'[^\w.]', '', orig_file_name.strip())
 
         # replace spaces with underscore
-        cleaned_file_name = cleaned_file_name.replace(" ", "_")
+        #cleaned_file_name = cleaned_file_name.replace(" ", "_")
 
         return cleaned_file_name

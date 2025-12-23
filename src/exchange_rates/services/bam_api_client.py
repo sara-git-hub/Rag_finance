@@ -210,11 +210,11 @@ class BankAlMaghribAPI:
         if date_obj is None:
             date_obj = datetime.now().date()
 
-        # BAM API requiert le format DD/MM/YYYY
+        # BAM API requiert le format YYYY-MM-DD
         if isinstance(date_obj, datetime):
             date_obj = date_obj.date()
 
-        date_str = date_obj.strftime("%d/%m/%Y")
+        date_str = date_obj.strftime("%Y-%m-%d")
 
         # Vérifier si on demande la date du jour
         today = datetime.now().date()

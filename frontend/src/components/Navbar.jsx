@@ -57,12 +57,12 @@ const Navbar = () => {
           </div>
 
           {/* Menu Items */}
-          <div className="hidden md:flex space-x-1 items-center">
+          <div className="hidden md:flex space-x-1 items-center flex-1 justify-center">
             {menuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200"
+                className="px-2 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200 text-sm whitespace-nowrap"
               >
                 {item.label}
               </Link>
@@ -73,7 +73,7 @@ const Navbar = () => {
               <div className="relative">
                 <button
                   onClick={() => setAdminDropdownOpen(!adminDropdownOpen)}
-                  className="px-4 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200 flex items-center"
+                  className="px-2 py-2 rounded-md hover:bg-white hover:bg-opacity-20 transition duration-200 flex items-center text-sm whitespace-nowrap"
                 >
                   Gestion Admin
                   <svg
@@ -105,10 +105,10 @@ const Navbar = () => {
           </div>
 
           {/* User Info & Logout */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
-                <span className="text-sm font-semibold">{user?.username}</span>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
+              <div className="bg-white bg-opacity-20 px-2 py-1 rounded-full">
+                <span className="text-xs font-semibold">{user?.username}</span>
               </div>
               <span className={`text-xs px-2 py-1 rounded ${
                 isAdmin() ? 'bg-yellow-500' : 'bg-green-500'
@@ -118,7 +118,7 @@ const Navbar = () => {
             </div>
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md transition duration-200"
+              className="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md transition duration-200 text-sm whitespace-nowrap"
             >
               Déconnexion
             </button>

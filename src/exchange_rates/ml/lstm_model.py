@@ -23,7 +23,7 @@ except ImportError:
     logging.warning("TensorFlow not installed. LSTM model will not be available.")
 
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error, r2_score
 
 logger = logging.getLogger(__name__)
 
@@ -219,22 +219,30 @@ class ExchangeRateLSTM:
 
         self.is_trained = True
 
-        # Calculer les métriques finales
-        y_pred = self.model.predict(X, verbose=0)
-        y_pred_original = self.scaler.inverse_transform(y_pred)
-        y_true_original = self.scaler.inverse_transform(y)
+        # Calculer les métriques sur l'ensemble de validation uniquement
+        # Séparer les données selon le même split que Keras utilise
+        split_index = int(len(X) * (1 - validation_split))
+        X_val = X[split_index:]
+        y_val = y[split_index:]
+
+        # Prédictions sur l'ensemble de validation
+        y_pred_val = self.model.predict(X_val, verbose=0)
+        y_pred_val_original = self.scaler.inverse_transform(y_pred_val)
+        y_val_original = self.scaler.inverse_transform(y_val)
 
         metrics = {
-            'mae': float(mean_absolute_error(y_true_original.flatten(), y_pred_original.flatten())),
-            'mse': float(mean_squared_error(y_true_original.flatten(), y_pred_original.flatten())),
-            'rmse': float(np.sqrt(mean_squared_error(y_true_original.flatten(), y_pred_original.flatten()))),
-            'mape': float(mean_absolute_percentage_error(y_true_original.flatten(), y_pred_original.flatten())),
+            'mae': float(mean_absolute_error(y_val_original.flatten(), y_pred_val_original.flatten())),
+            'mse': float(mean_squared_error(y_val_original.flatten(), y_pred_val_original.flatten())),
+            'rmse': float(np.sqrt(mean_squared_error(y_val_original.flatten(), y_pred_val_original.flatten()))),
+            'mape': float(mean_absolute_percentage_error(y_val_original.flatten(), y_pred_val_original.flatten())),
+            'r2': float(r2_score(y_val_original.flatten(), y_pred_val_original.flatten())),
             'epochs_trained': len(history.history['loss']),
             'final_loss': float(history.history['loss'][-1]),
-            'final_val_loss': float(history.history['val_loss'][-1])
+            'final_val_loss': float(history.history['val_loss'][-1]),
+            'validation_samples': len(X_val)
         }
 
-        logger.info(f"Training complete. MAE: {metrics['mae']:.4f}, RMSE: {metrics['rmse']:.4f}")
+        logger.info(f"Training complete. Validation metrics - MAE: {metrics['mae']:.4f}, RMSE: {metrics['rmse']:.4f}, R²: {metrics['r2']:.4f}")
 
         return metrics
 

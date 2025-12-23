@@ -17,8 +17,8 @@ class TestDocumentService:
         service = DocumentService(project_path=str(test_data_dir))
 
         assert service.project_path == str(test_data_dir)
-        assert service.chunk_size == 1000
-        assert service.chunk_overlap == 200
+        assert service.chunk_size == 800
+        assert service.chunk_overlap == 160
         assert service.text_splitter is not None
 
     def test_init_custom_params(self, test_data_dir):

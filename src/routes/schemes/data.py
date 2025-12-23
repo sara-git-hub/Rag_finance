@@ -3,8 +3,8 @@ from typing import Optional, Literal
 
 class ProcessRequest(BaseModel):
     file_id : str = None
-    chunk_size : Optional[int] = 100
-    overlap_size : Optional[int] = 20
+    chunk_size : Optional[int] = 800
+    overlap_size : Optional[int] = 160
     do_reset : Optional[int] = 0
 
 class ProjectLanguageRequest(BaseModel):

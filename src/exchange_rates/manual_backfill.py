@@ -69,7 +69,8 @@ async def manual_backfill(
     logger.info(f"Date range: {start_date} to {end_date}")
     logger.info(f"Total days to fetch: {total_days}")
     logger.info(f"Delay between requests: {delay} seconds")
-    logger.info(f"Estimated duration: {(total_days * delay * 2) / 60:.1f} minutes (~{(total_days * delay * 2) / 3600:.1f} hours)")
+    logger.info(f"Estimated duration (worst case): {(total_days * delay * 2) / 60:.1f} minutes (~{(total_days * delay * 2) / 3600:.1f} hours)")
+    logger.info(f"Note: Existing data will be skipped without delay, actual time may be much shorter")
     logger.info("=" * 70)
 
     # Initialiser le client API et le modèle
@@ -113,9 +114,8 @@ async def manual_backfill(
                     )
                     logger.info(f"  ✓ MAD/EUR saved")
                     eur_saved = True
-
-            # Attendre entre EUR et USD pour éviter le rate limiting
-            await asyncio.sleep(delay)
+                    # Attendre seulement si on a fait une requête API
+                    await asyncio.sleep(delay)
 
             # Vérifier et récupérer MAD/USD
             usd_exists = await model.rate_exists(
@@ -155,8 +155,9 @@ async def manual_backfill(
                 logger.info(f"📊 Progress: {progress:.1f}% | Success: {success_count} | Errors: {error_count} | Skipped: {int(skip_count)} pairs")
                 logger.info("")
 
-            # Délai avant la prochaine date
-            await asyncio.sleep(delay)
+            # Délai avant la prochaine date (seulement si on a fait au moins une requête API)
+            if not eur_exists or not usd_exists:
+                await asyncio.sleep(delay)
 
         except Exception as e:
             error_count += 1
@@ -204,9 +205,8 @@ async def manual_backfill(
                                 )
                                 logger.info(f"  ✓ MAD/EUR saved (after retry {retry_attempt})")
                                 retry_eur_saved = True
-
-                        # Attendre entre EUR et USD
-                        await asyncio.sleep(delay)
+                                # Attendre entre EUR et USD seulement si on a fait une requête
+                                await asyncio.sleep(delay)
 
                         # Vérifier et récupérer MAD/USD
                         usd_exists = await model.rate_exists(
@@ -309,8 +309,8 @@ Examples:
     parser.add_argument(
         '--delay',
         type=int,
-        default=65,
-        help='Délai en secondes entre chaque requête (défaut: 65)'
+        default=45,
+        help='Délai en secondes entre chaque requête (défaut: 45, recommandé: 45-60 pour éviter rate limiting)'
     )
 
     args = parser.parse_args()

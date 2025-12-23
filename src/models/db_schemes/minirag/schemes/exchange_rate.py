@@ -77,6 +77,7 @@ class ModelMetrics(SQLAlchemyBase):
     mse = Column(Float, nullable=True)  # Mean Squared Error
     rmse = Column(Float, nullable=True)  # Root Mean Squared Error
     mape = Column(Float, nullable=True)  # Mean Absolute Percentage Error
+    r2 = Column(Float, nullable=True)  # R² (Coefficient of Determination)
 
     # Période d'entraînement
     training_start_date = Column(Date, nullable=True)

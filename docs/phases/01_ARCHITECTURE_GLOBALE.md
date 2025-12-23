@@ -33,7 +33,7 @@ Le projet **fil_rouge** est une application de **Retrieval-Augmented Generation 
 - **Frontend** : React 18 + Vite
 - **Database** : PostgreSQL 17 + PGVector
 - **Vector DB** : Qdrant v1.13.6
-- **LLM** : Ollama (local, gratuit)
+- **LLM** : Ollama (local, gratuit), Groq
 - **Monitoring** : Prometheus + Grafana
 
 ---

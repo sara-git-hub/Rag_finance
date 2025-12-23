@@ -183,7 +183,7 @@ async def get_history(
 async def train_model(
     request: Request,
     currency_pair: str = Query(..., description="MAD/EUR or MAD/USD"),
-    days_history: int = Query(365, ge=60, le=730),
+    days_history: int = Query(175, ge=60, le=730),
     current_user: dict = Depends(require_admin)
 ):
     """
@@ -191,13 +191,17 @@ async def train_model(
     Réservé aux administrateurs
     """
     try:
+        # Log pour debug
+        logger.info(f"Training model - currency_pair received: '{currency_pair}'")
+
         # Valider la paire
         try:
             pair = CurrencyPair(currency_pair)
-        except ValueError:
+        except ValueError as ve:
+            logger.error(f"Invalid currency pair '{currency_pair}': {ve}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid currency pair"
+                detail=f"Invalid currency pair: '{currency_pair}'. Expected: MAD/EUR or MAD/USD"
             )
 
         prediction_service = PredictionService(

@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext';
 const Process = () => {
   const [projectId, setProjectId] = useState('1');
   const [fileId, setFileId] = useState('');
-  const [chunkSize, setChunkSize] = useState(1000);
-  const [overlapSize, setOverlapSize] = useState(200);
+  const [chunkSize, setChunkSize] = useState(800);
+  const [overlapSize, setOverlapSize] = useState(160);
   const [doReset, setDoReset] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -125,7 +125,7 @@ const Process = () => {
                   max="10000"
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Recommandé: 1000-2000 caractères
+                  Recommandé: 600-800 caractères
                 </p>
               </div>
 
