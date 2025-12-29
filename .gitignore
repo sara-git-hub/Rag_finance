@@ -43,6 +43,7 @@ assets/database/
 
 # Frontend
 node_modules/
+Data/
 
 Documentation files
 *.docx
