@@ -8,7 +8,7 @@ from starlette_exporter import PrometheusMiddleware, handle_metrics
 from contextlib import asynccontextmanager
 
 # LangChain services
-from services import EmbeddingsService, PromptService
+from services import EmbeddingsService
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,9 +52,6 @@ async def startup_span(app: FastAPI):
         device=getattr(settings, "EMBEDDING_DEVICE", "cpu")  # or "cuda" if GPU available
     )
 
-    # Prompt Service - Multi-language support
-    app.prompt_service = PromptService(language=settings.PRIMARY_LANG)
-
     # Store embedding dimension for database operations
     app.embedding_dimension = app.embeddings_service.get_embedding_dimension()
 
@@ -72,7 +69,7 @@ async def startup_span(app: FastAPI):
     app.generation_backend = settings.GENERATION_BACKEND
     app.generation_model = settings.GENERATION_MODEL_ID
     app.generation_max_tokens = settings.GENERATION_DEFAULT_MAX_TOKENS or 1000
-    app.generation_temperature = settings.GENERATION_DEFAULT_TEMPERATURE or 0.7
+    app.generation_temperature = settings.GENERATION_DEFAULT_TEMPERATURE or 0.1
 
     # Set API key based on provider
     if settings.GENERATION_BACKEND == "openai":
@@ -124,9 +121,9 @@ async def startup_span(app: FastAPI):
     today = datetime.now().date()
     rate_model = await ExchangeRateModel.create_instance(app.db_client)
 
-    # Vérifier pour MAD/EUR
+    # Vérifier pour EUR/MAD
     today_rates = await rate_model.get_rates_by_date_range(
-        currency_pair=CurrencyPair.MAD_EUR,
+        currency_pair=CurrencyPair.EUR_MAD,
         start_date=today,
         end_date=today,
         rate_type=RateType.ACTUAL
@@ -145,7 +142,10 @@ async def startup_span(app: FastAPI):
         print(f"✓ Today's rates already exist (date: {today})")
 
     # Initialiser et démarrer le scheduler
-    app.exchange_scheduler = get_scheduler()
+    # Passer l'event loop actuel pour que les jobs async s'exécutent dans le bon contexte
+    import asyncio
+    current_loop = asyncio.get_running_loop()
+    app.exchange_scheduler = get_scheduler(event_loop=current_loop)
 
     # Ajouter le job quotidien (tous les jours à 9h du matin)
     app.exchange_scheduler.add_daily_job(
@@ -159,8 +159,6 @@ async def startup_span(app: FastAPI):
 
     # Démarrer le scheduler
     app.exchange_scheduler.start()
-
-    print("✓ Exchange Rates Scheduler initialized and started")
 
 
 async def shutdown_span(app: FastAPI):

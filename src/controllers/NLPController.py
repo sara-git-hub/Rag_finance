@@ -18,16 +18,15 @@ import os
 class NLPController(BaseController):
     """Controller NLP utilisant les services LangChain"""
 
-    def __init__(self, embeddings_service, prompt_service, generation_backend: str,
+    def __init__(self, embeddings_service, generation_backend: str,
                  generation_model: str, api_key: str, vector_db_backend: str = "qdrant",
                  vector_db_path: str = "assets/database", connection_string: str = None,
-                 qdrant_url: str = None, max_tokens: int = 1000, temperature: float = 0.7):
+                 qdrant_url: str = None, max_tokens: int = 1000, temperature: float = 0.1):
         """
         Initialize NLP Controller with LangChain services
 
         Args:
             embeddings_service: EmbeddingsService instance
-            prompt_service: PromptService instance
             generation_backend: "openai", "cohere", "ollama", or "groq"
             generation_model: Model ID
             api_key: API key for generation (not needed for ollama)
@@ -36,12 +35,11 @@ class NLPController(BaseController):
             connection_string: PostgreSQL connection string (for PGVector)
             qdrant_url: URL for remote Qdrant (e.g. http://qdrant:6333 in Docker)
             max_tokens: Maximum tokens for generation (default: 1000)
-            temperature: Temperature for generation (default: 0.7)
+            temperature: Temperature for generation (default: 0.1)
         """
         super().__init__()
 
         self.embeddings_service = embeddings_service
-        self.prompt_service = prompt_service
         self.generation_backend = generation_backend
         self.generation_model = generation_model
         self.api_key = api_key

@@ -251,8 +251,7 @@ Le projet utilise GitHub Actions pour l'exécution automatique des tests:
 3. Création d'un fichier `.env` de test avec valeurs mock
 4. Exécution des tests unitaires compatibles CI/CD (131 tests)
 5. Génération du rapport de couverture (XML)
-6. Upload vers Codecov (optionnel, nécessite `CODECOV_TOKEN`)
-7. Commentaire automatique sur les PR avec le % de couverture
+6. Commentaire automatique sur les PR avec le % de couverture
 
 **Tests CI/CD vs Tests Locaux**:
 

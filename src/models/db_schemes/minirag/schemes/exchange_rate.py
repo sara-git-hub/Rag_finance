@@ -1,6 +1,6 @@
 """
 Exchange Rate Schema
-Stockage des taux de change MAD/EUR et MAD/USD
+Stockage des taux de change EUR/MAD et USD/MAD
 """
 
 from .minirag_base import SQLAlchemyBase
@@ -13,8 +13,8 @@ import enum
 
 class CurrencyPair(str, enum.Enum):
     """Paires de devises supportées"""
-    MAD_EUR = "MAD/EUR"
-    MAD_USD = "MAD/USD"
+    EUR_MAD = "EUR/MAD"
+    USD_MAD = "USD/MAD"
 
 
 class RateType(str, enum.Enum):

@@ -14,6 +14,8 @@ auth_router = APIRouter(
     tags=["authentication"],
 )
 
+# ============= Schemas Pydantic =============
+
 class RegisterRequest(BaseModel):
     username: str
     email: EmailStr
@@ -43,6 +45,8 @@ class AdminCreateUserRequest(BaseModel):
 
 class UpdatePasswordRequest(BaseModel):
     new_password: str
+
+# ============= Routes =============
 
 @auth_router.post("/register", response_model=Token)
 async def register(request: Request, register_data: RegisterRequest):

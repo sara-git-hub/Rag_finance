@@ -50,7 +50,7 @@ GENERATION_MODEL_ID_LITERAL = ["gpt-3.5-turbo-0125","gpt-4o-mini","command-r","c
 
 # Paramètres de génération
 GENERATION_DEFAULT_MAX_TOKENS=1000
-GENERATION_DEFAULT_TEMPERATURE=0.7
+GENERATION_DEFAULT_TEMPERATURE=0.1
 INPUT_DEFAULT_MAX_CHARACTERS=1024
 
 # ========================= Embeddings Config =========================
@@ -69,9 +69,6 @@ VECTOR_DB_PATH = "qdrant_db"
 VECTOR_DB_DISTANCE_METHOD = "cosine"
 VECTOR_DB_PGVEC_INDEX_THRESHOLD = 100
 
-# ========================= Template Configs =========================
-PRIMARY_LANG = "fr"
-DEFAULT_LANG = "en"
 
 # JWT Authentication
 SECRET_KEY=

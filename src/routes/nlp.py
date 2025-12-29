@@ -45,7 +45,6 @@ async def index_project(request: Request, project_id: int, push_request: PushReq
     # Initialize NLPController with LangChain services
     nlp_controller = NLPController(
         embeddings_service=request.app.embeddings_service,
-        prompt_service=request.app.prompt_service,
         generation_backend=request.app.generation_backend,
         generation_model=request.app.generation_model,
         api_key=request.app.generation_api_key,
@@ -117,7 +116,6 @@ async def get_project_index_info(request: Request, project_id: int,
     # Initialize NLPController with LangChain services
     nlp_controller = NLPController(
         embeddings_service=request.app.embeddings_service,
-        prompt_service=request.app.prompt_service,
         generation_backend=request.app.generation_backend,
         generation_model=request.app.generation_model,
         api_key=request.app.generation_api_key,
@@ -155,7 +153,6 @@ async def search_index(request: Request, project_id: int, search_request: Search
         # Initialize NLPController - THIS is the blocking part!
         nlp_controller = NLPController(
             embeddings_service=request.app.embeddings_service,
-            prompt_service=request.app.prompt_service,
             generation_backend=request.app.generation_backend,
             generation_model=request.app.generation_model,
             api_key=request.app.generation_api_key,
@@ -255,7 +252,6 @@ async def answer_rag(request: Request, project_id: int, search_request: SearchRe
     # Initialize NLPController
     nlp_controller = NLPController(
         embeddings_service=request.app.embeddings_service,
-        prompt_service=request.app.prompt_service,
         generation_backend=request.app.generation_backend,
         generation_model=request.app.generation_model,
         api_key=request.app.generation_api_key,

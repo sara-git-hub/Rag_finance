@@ -142,7 +142,6 @@ async def process_endpoint(request: Request, project_id: int, process_request: P
     # Initialize NLPController with LangChain services
     nlp_controller = NLPController(
         embeddings_service=request.app.embeddings_service,
-        prompt_service=request.app.prompt_service,
         generation_backend=request.app.generation_backend,
         generation_model=request.app.generation_model,
         api_key=request.app.generation_api_key,

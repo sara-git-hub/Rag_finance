@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class BankAlMaghribAPI:
     """
     Client pour l'API publique de Bank Al-Maghrib (BAM).
-    Récupération des cours de change MAD/EUR et MAD/USD
+    Récupération des cours de change EUR/MAD et USD/MAD
     """
 
     BASE_URL = "https://api.centralbankofmorocco.ma"
@@ -310,25 +310,25 @@ class BankAlMaghribAPI:
             ).inc()
             return None
 
-    def get_mad_eur_rate(self, date_obj: Optional[date] = None) -> Optional[Dict[str, float]]:
-        """Récupérer le taux MAD/EUR"""
+    def get_eur_mad_rate(self, date_obj: Optional[date] = None) -> Optional[Dict[str, float]]:
+        """Récupérer le taux EUR/MAD"""
         return self.get_exchange_rate("EUR", date_obj)
 
-    def get_mad_usd_rate(self, date_obj: Optional[date] = None) -> Optional[Dict[str, float]]:
-        """Récupérer le taux MAD/USD"""
+    def get_usd_mad_rate(self, date_obj: Optional[date] = None) -> Optional[Dict[str, float]]:
+        """Récupérer le taux USD/MAD"""
         return self.get_exchange_rate("USD", date_obj)
 
     def get_both_rates(self, date_obj: Optional[date] = None) -> Dict[str, Optional[Dict[str, float]]]:
         """
-        Récupérer MAD/EUR et MAD/USD en une fois
+        Récupérer EUR/MAD et USD/MAD en une fois
 
         Returns:
             {
-                "MAD/EUR": {"achat": float, "vente": float},
-                "MAD/USD": {"achat": float, "vente": float}
+                "EUR/MAD": {"achat": float, "vente": float},
+                "USD/MAD": {"achat": float, "vente": float}
             }
         """
         return {
-            "MAD/EUR": self.get_mad_eur_rate(date_obj),
-            "MAD/USD": self.get_mad_usd_rate(date_obj)
+            "EUR/MAD": self.get_eur_mad_rate(date_obj),
+            "USD/MAD": self.get_usd_mad_rate(date_obj)
         }

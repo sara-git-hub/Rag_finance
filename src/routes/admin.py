@@ -241,25 +241,24 @@ async def delete_asset(
 ):
     """Delete an asset, its related chunks, and vectors"""
     async with request.app.db_client() as session:
-        # First, get the asset to find its project_id
-        asset_query = select(Asset).where(Asset.asset_id == asset_id)
-        asset_result = await session.execute(asset_query)
-        asset = asset_result.scalar_one_or_none()
-
-        if not asset:
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={"signal": "ASSET_NOT_FOUND"}
-            )
-
-        project_id = asset.asset_project_id
-
-        # Get all chunk IDs for this asset (needed to delete vectors)
-        chunk_ids_query = select(DataChunk.chunk_id).where(DataChunk.chunk_asset_id == asset_id)
-        chunk_ids_result = await session.execute(chunk_ids_query)
-        chunk_ids = [row[0] for row in chunk_ids_result]
-
         async with session.begin():
+            # First, get the asset to find its project_id
+            asset_query = select(Asset).where(Asset.asset_id == asset_id)
+            asset_result = await session.execute(asset_query)
+            asset = asset_result.scalar_one_or_none()
+
+            if not asset:
+                return JSONResponse(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    content={"signal": "ASSET_NOT_FOUND"}
+                )
+
+            project_id = asset.asset_project_id
+
+            # Get all chunk IDs for this asset (needed to delete vectors)
+            chunk_ids_query = select(DataChunk.chunk_id).where(DataChunk.chunk_asset_id == asset_id)
+            chunk_ids_result = await session.execute(chunk_ids_query)
+            chunk_ids = [row[0] for row in chunk_ids_result]
             # Delete related chunks from database
             await session.execute(
                 delete(DataChunk).where(DataChunk.chunk_asset_id == asset_id)
@@ -281,7 +280,6 @@ async def delete_asset(
 
             nlp_controller = NLPController(
                 embeddings_service=request.app.embeddings_service,
-                prompt_service=request.app.prompt_service,
                 generation_backend=request.app.generation_backend,
                 generation_model=request.app.generation_model,
                 api_key=request.app.generation_api_key,

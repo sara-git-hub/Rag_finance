@@ -1,6 +1,6 @@
 """
 Fetch Exchange Rates Job
-Job quotidien pour récupérer les taux de change MAD/EUR et MAD/USD
+Job quotidien pour récupérer les taux de change EUR/MAD et USD/MAD
 """
 
 import logging
@@ -45,12 +45,12 @@ class FetchExchangeRatesJob:
             target_date: Date pour laquelle récupérer les taux
 
         Returns:
-            {"MAD/EUR": bool, "MAD/USD": bool}
+            {"EUR/MAD": bool, "USD/MAD": bool}
         """
         logger.info(f"Fetching exchange rates for {target_date}")
 
         model = await ExchangeRateModel.create_instance(self.db_client)
-        results = {"MAD/EUR": False, "MAD/USD": False}
+        results = {"EUR/MAD": False, "USD/MAD": False}
 
         # Récupérer les deux taux
         rates_data = self.bam_client.get_both_rates(target_date)
@@ -106,7 +106,7 @@ class FetchExchangeRatesJob:
             days: Nombre de jours à vérifier (par défaut 365 pour 1 an)
 
         Returns:
-            {"MAD/EUR": count, "MAD/USD": count} nombre de jours ajoutés
+            {"EUR/MAD": count, "USD/MAD": count} nombre de jours ajoutés
         """
         logger.info(f"Backfilling exchange rates for last {days} days")
 
@@ -114,7 +114,7 @@ class FetchExchangeRatesJob:
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
 
-        counts = {"MAD/EUR": 0, "MAD/USD": 0}
+        counts = {"EUR/MAD": 0, "USD/MAD": 0}
 
         # Parcourir chaque jour
         current_date = start_date

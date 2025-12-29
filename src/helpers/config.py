@@ -49,9 +49,6 @@ class Settings(BaseSettings):
     VECTOR_DB_DISTANCE_METHOD: Optional[str] = None
     VECTOR_DB_PGVEC_INDEX_THRESHOLD: int = 100
 
-    PRIMARY_LANG : str = "en"
-    DEFAULT_LANG : str = "en"
-
     class Config:
         env_file = ".env"
 

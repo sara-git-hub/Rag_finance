@@ -1,14 +1,13 @@
 from models.BaseDataModel import BaseDataModel
 from models.db_schemes.minirag.schemes.user import User, UserRole
 from sqlalchemy import select, delete
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from helpers.auth import get_password_hash as _hash_password
 
 class UserModel(BaseDataModel):
 
     def get_password_hash(self, password: str) -> str:
-        return pwd_context.hash(password)
+        """Hash a password using bcrypt. Delegates to helpers.auth.get_password_hash."""
+        return _hash_password(password)
 
     async def create_user(self, username: str, email: str, password: str, role: UserRole = UserRole.USER):
         async with self.db_client() as session:

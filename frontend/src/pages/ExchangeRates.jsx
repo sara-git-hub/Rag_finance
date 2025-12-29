@@ -15,12 +15,12 @@ import {
 const ExchangeRates = () => {
   const [loading, setLoading] = useState(false);
   const [latestRates, setLatestRates] = useState(null);
-  const [selectedPair, setSelectedPair] = useState('MAD/EUR');
+  const [selectedPair, setSelectedPair] = useState('EUR/MAD');
   const [chartData, setChartData] = useState([]);
   const [daysHistory, setDaysHistory] = useState(30);
   const [error, setError] = useState(null);
 
-  const currencyPairs = ['MAD/EUR', 'MAD/USD'];
+  const currencyPairs = ['EUR/MAD', 'USD/MAD'];
 
   useEffect(() => {
     fetchLatestRates();
@@ -125,35 +125,35 @@ const ExchangeRates = () => {
           {/* Latest Rates Cards */}
           {latestRates && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* MAD/EUR Card */}
+              {/* EUR/MAD Card */}
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
                 <h2 className="text-xl font-semibold text-gray-700 mb-3">
-                  MAD/EUR
+                  EUR/MAD
                 </h2>
-                {latestRates['MAD/EUR'] ? (
+                {latestRates['EUR/MAD'] ? (
                   <>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Achat:</span>
                         <span className="text-2xl font-bold text-green-600">
-                          {latestRates['MAD/EUR'].achat?.toFixed(4)}
+                          {latestRates['EUR/MAD'].achat?.toFixed(4)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Vente:</span>
                         <span className="text-2xl font-bold text-red-600">
-                          {latestRates['MAD/EUR'].vente?.toFixed(4)}
+                          {latestRates['EUR/MAD'].vente?.toFixed(4)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Moyenne:</span>
                         <span className="text-xl font-semibold text-blue-600">
-                          {latestRates['MAD/EUR'].moyenne?.toFixed(4)}
+                          {latestRates['EUR/MAD'].moyenne?.toFixed(4)}
                         </span>
                       </div>
                     </div>
                     <p className="text-sm text-gray-500 mt-3">
-                      Date: {new Date(latestRates['MAD/EUR'].date).toLocaleDateString('fr-FR')}
+                      Date: {new Date(latestRates['EUR/MAD'].date).toLocaleDateString('fr-FR')}
                     </p>
                   </>
                 ) : (
@@ -161,35 +161,35 @@ const ExchangeRates = () => {
                 )}
               </div>
 
-              {/* MAD/USD Card */}
+              {/* USD/MAD Card */}
               <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
                 <h2 className="text-xl font-semibold text-gray-700 mb-3">
-                  MAD/USD
+                  USD/MAD
                 </h2>
-                {latestRates['MAD/USD'] ? (
+                {latestRates['USD/MAD'] ? (
                   <>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Achat:</span>
                         <span className="text-2xl font-bold text-green-600">
-                          {latestRates['MAD/USD'].achat?.toFixed(4)}
+                          {latestRates['USD/MAD'].achat?.toFixed(4)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Vente:</span>
                         <span className="text-2xl font-bold text-red-600">
-                          {latestRates['MAD/USD'].vente?.toFixed(4)}
+                          {latestRates['USD/MAD'].vente?.toFixed(4)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Moyenne:</span>
                         <span className="text-xl font-semibold text-blue-600">
-                          {latestRates['MAD/USD'].moyenne?.toFixed(4)}
+                          {latestRates['USD/MAD'].moyenne?.toFixed(4)}
                         </span>
                       </div>
                     </div>
                     <p className="text-sm text-gray-500 mt-3">
-                      Date: {new Date(latestRates['MAD/USD'].date).toLocaleDateString('fr-FR')}
+                      Date: {new Date(latestRates['USD/MAD'].date).toLocaleDateString('fr-FR')}
                     </p>
                   </>
                 ) : (

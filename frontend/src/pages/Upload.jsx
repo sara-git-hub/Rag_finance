@@ -103,7 +103,7 @@ const Upload = () => {
                   id="file-input"
                   onChange={handleFileChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-600"
-                  accept=".pdf,.txt,.doc,.docx"
+                  accept=".pdf,.txt"
                 />
                 {selectedFile && (
                   <p className="mt-2 text-sm text-gray-600">
@@ -139,7 +139,6 @@ const Upload = () => {
               <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
                 <li>PDF (.pdf)</li>
                 <li>Texte (.txt)</li>
-                <li>Word (.doc, .docx)</li>
               </ul>
             </div>
           </div>

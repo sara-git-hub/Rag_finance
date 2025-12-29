@@ -45,7 +45,7 @@ class ExchangeRateModel:
         Insérer un nouveau taux de change
 
         Args:
-            currency_pair: Paire de devises (MAD/EUR ou MAD/USD)
+            currency_pair: Paire de devises (EUR/MAD ou USD/MAD)
             date: Date du taux
             achat: Taux d'achat
             vente: Taux de vente

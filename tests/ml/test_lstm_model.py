@@ -153,6 +153,9 @@ class TestExchangeRateLSTMDataPreparation:
 
     def create_sample_data(self, n_days: int = 100, start_date: str = "2023-01-01") -> pd.DataFrame:
         """Créer des données synthétiques pour les tests"""
+        # Fixer le seed pour reproductibilité
+        np.random.seed(42)
+
         dates = pd.date_range(start=start_date, periods=n_days, freq='D')
 
         # Générer des taux de change synthétiques (tendance + bruit)
@@ -294,6 +297,9 @@ class TestExchangeRateLSTMTraining:
 
     def create_sample_data(self, n_days: int = 100) -> pd.DataFrame:
         """Créer des données synthétiques pour les tests"""
+        # Fixer le seed pour reproductibilité
+        np.random.seed(42)
+
         dates = pd.date_range(start="2023-01-01", periods=n_days, freq='D')
         base_rate = 10.5
         trend = np.linspace(0, 0.5, n_days)
@@ -387,6 +393,9 @@ class TestExchangeRateLSTMPrediction:
 
     def create_sample_data(self, n_days: int = 100) -> pd.DataFrame:
         """Créer des données synthétiques"""
+        # Fixer le seed pour reproductibilité
+        np.random.seed(42)
+
         dates = pd.date_range(start="2023-01-01", periods=n_days, freq='D')
         base_rate = 10.5
         trend = np.linspace(0, 0.5, n_days)
@@ -493,6 +502,9 @@ class TestExchangeRateLSTMSaveLoad:
 
     def create_sample_data(self, n_days: int = 100) -> pd.DataFrame:
         """Créer des données synthétiques"""
+        # Fixer le seed pour reproductibilité
+        np.random.seed(42)
+
         dates = pd.date_range(start="2023-01-01", periods=n_days, freq='D')
         rates = 10.5 + np.random.normal(0, 0.1, n_days)
         return pd.DataFrame({

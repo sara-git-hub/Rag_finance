@@ -149,7 +149,7 @@ class TestRAGServiceWithLLM:
         llm = ChatGroq(
             model="llama-3.3-70b-versatile",
             api_key=groq_api_key,
-            temperature=0.7
+            temperature=0.1
         )
 
         rag = RAGService(
@@ -169,7 +169,7 @@ class TestRAGServiceWithLLM:
         llm = ChatGroq(
             model="llama-3.3-70b-versatile",
             api_key=groq_api_key,
-            temperature=0.7
+            temperature=0.1
         )
 
         rag = RAGService(
@@ -190,7 +190,7 @@ class TestRAGServiceWithLLM:
         llm = ChatGroq(
             model="llama-3.3-70b-versatile",
             api_key=groq_api_key,
-            temperature=0.7
+            temperature=0.1
         )
 
         rag = RAGService(
@@ -209,7 +209,7 @@ class TestRAGServiceWithLLM:
         llm = ChatGroq(
             model="llama-3.3-70b-versatile",
             api_key=groq_api_key,
-            temperature=0.7
+            temperature=0.1
         )
 
         rag = RAGService(

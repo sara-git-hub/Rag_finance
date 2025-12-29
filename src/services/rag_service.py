@@ -408,7 +408,7 @@ def create_rag_service(
         llm = ChatOpenAI(
             model=model_name,
             openai_api_key=api_key,
-            temperature=llm_kwargs.get("temperature", 0.7),
+            temperature=llm_kwargs.get("temperature", 0.1),
             max_tokens=llm_kwargs.get("max_tokens", 1000)
         )
     elif llm_provider == "cohere":
@@ -416,7 +416,7 @@ def create_rag_service(
         llm = ChatCohere(
             model=model_name,
             cohere_api_key=api_key,
-            temperature=llm_kwargs.get("temperature", 0.7),
+            temperature=llm_kwargs.get("temperature", 0.1),
             max_tokens=llm_kwargs.get("max_tokens", 1000)
         )
     elif llm_provider == "ollama":
@@ -426,7 +426,7 @@ def create_rag_service(
         llm = ChatOllama(
             model=model_name,
             base_url=base_url,
-            temperature=llm_kwargs.get("temperature", 0.7),
+            temperature=llm_kwargs.get("temperature", 0.1),
             num_predict=llm_kwargs.get("max_tokens", 1000)
         )
     elif llm_provider == "groq":
@@ -434,7 +434,7 @@ def create_rag_service(
         llm = ChatGroq(
             model=model_name,
             groq_api_key=api_key,
-            temperature=llm_kwargs.get("temperature", 0.7),
+            temperature=llm_kwargs.get("temperature", 0.1),
             max_tokens=llm_kwargs.get("max_tokens", 1000)
         )
     else:

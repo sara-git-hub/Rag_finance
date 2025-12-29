@@ -63,7 +63,7 @@ const Dashboard = () => {
               </svg>
             </div>
             <h3 className="text-xl font-semibold mb-2">Taux de Change</h3>
-            <p className="text-gray-600">Consultez les taux de change MAD/EUR</p>
+            <p className="text-gray-600">Consultez les taux de change EUR/MAD</p>
           </div>
 
           {/* Card Admin: Upload (visible seulement pour admin) */}

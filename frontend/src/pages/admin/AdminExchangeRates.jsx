@@ -6,9 +6,9 @@ const AdminExchangeRates = () => {
   const [loading, setLoading] = useState(false);
   const [schedulerStatus, setSchedulerStatus] = useState(null);
   const [trainResult, setTrainResult] = useState(null);
-  const [selectedPair, setSelectedPair] = useState('MAD/EUR');
+  const [selectedPair, setSelectedPair] = useState('EUR/MAD');
 
-  const currencyPairs = ['MAD/EUR', 'MAD/USD'];
+  const currencyPairs = ['EUR/MAD', 'USD/MAD'];
 
   useEffect(() => {
     fetchSchedulerStatus();
@@ -27,7 +27,7 @@ const AdminExchangeRates = () => {
     setLoading(true);
     try {
       const response = await adminAPI.fetchRatesNow();
-      alert(`Taux récupérés avec succès!\nMAD/EUR: ${response.data.results['MAD/EUR'] ? 'OK' : 'Échec'}\nMAD/USD: ${response.data.results['MAD/USD'] ? 'OK' : 'Échec'}`);
+      alert(`Taux récupérés avec succès!\nEUR/MAD: ${response.data.results['EUR/MAD'] ? 'OK' : 'Échec'}\nUSD/MAD: ${response.data.results['USD/MAD'] ? 'OK' : 'Échec'}`);
     } catch (error) {
       console.error('Error fetching rates:', error);
       alert('Erreur lors de la récupération des taux');

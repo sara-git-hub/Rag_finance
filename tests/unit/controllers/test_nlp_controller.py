@@ -17,12 +17,10 @@ class TestNLPControllerInitialization:
 
         # Arrange
         embeddings_service = Mock()
-        prompt_service = Mock()
 
         # Act
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key"
@@ -30,13 +28,12 @@ class TestNLPControllerInitialization:
 
         # Assert
         assert controller.embeddings_service == embeddings_service
-        assert controller.prompt_service == prompt_service
         assert controller.generation_backend == "openai"
         assert controller.generation_model == "gpt-3.5-turbo"
         assert controller.api_key == "test_key"
         assert controller.vector_db_backend == "qdrant"  # default
         assert controller.max_tokens == 1000  # default
-        assert controller.temperature == 0.7  # default
+        assert controller.temperature == 0.1  # default
         assert controller._vectorstores == {}  # cache vide
 
     def test_initialization_with_custom_params(self):
@@ -45,12 +42,10 @@ class TestNLPControllerInitialization:
 
         # Arrange
         embeddings_service = Mock()
-        prompt_service = Mock()
 
         # Act
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="ollama",
             generation_model="llama2",
             api_key="",
@@ -59,7 +54,7 @@ class TestNLPControllerInitialization:
             connection_string="postgresql://...",
             qdrant_url="http://qdrant:6333",
             max_tokens=2000,
-            temperature=0.5
+            temperature=0.1
         )
 
         # Assert
@@ -68,7 +63,7 @@ class TestNLPControllerInitialization:
         assert controller.connection_string == "postgresql://..."
         assert controller.qdrant_url == "http://qdrant:6333"
         assert controller.max_tokens == 2000
-        assert controller.temperature == 0.5
+        assert controller.temperature == 0.1
 
     def test_initialization_different_generation_backends(self):
         """Test initialisation avec différents backends de génération"""
@@ -79,12 +74,10 @@ class TestNLPControllerInitialization:
         for backend in backends:
             # Arrange
             embeddings_service = Mock()
-            prompt_service = Mock()
 
             # Act
             controller = NLPController(
                 embeddings_service=embeddings_service,
-                prompt_service=prompt_service,
                 generation_backend=backend,
                 generation_model="test-model",
                 api_key="test-key" if backend != "ollama" else ""
@@ -105,11 +98,9 @@ class TestNLPControllerCollectionName:
         # Arrange
         embeddings_service = Mock()
         embeddings_service.get_embedding_dimension.return_value = 384
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key"
@@ -132,11 +123,9 @@ class TestNLPControllerCollectionName:
             # Arrange
             embeddings_service = Mock()
             embeddings_service.get_embedding_dimension.return_value = dim
-            prompt_service = Mock()
 
             controller = NLPController(
                 embeddings_service=embeddings_service,
-                prompt_service=prompt_service,
                 generation_backend="openai",
                 generation_model="gpt-3.5-turbo",
                 api_key="test_key"
@@ -155,11 +144,9 @@ class TestNLPControllerCollectionName:
         # Arrange
         embeddings_service = Mock()
         embeddings_service.get_embedding_dimension.return_value = 384
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key"
@@ -189,11 +176,9 @@ class TestNLPControllerVectorStore:
         embeddings_service.get_embedding_dimension.return_value = 384
         embeddings_service.embeddings = Mock()  # Mock des embeddings LangChain
 
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key",
@@ -230,11 +215,9 @@ class TestNLPControllerVectorStore:
         embeddings_service.get_embedding_dimension.return_value = 384
         embeddings_service.embeddings = Mock()
 
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key"
@@ -268,11 +251,9 @@ class TestNLPControllerVectorStore:
         embeddings_service.get_embedding_dimension.return_value = 768
         embeddings_service.embeddings = Mock()
 
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key",
@@ -305,11 +286,9 @@ class TestNLPControllerVectorStore:
         embeddings_service.get_embedding_dimension.return_value = 384
         embeddings_service.embeddings = Mock()
 
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key",
@@ -344,11 +323,9 @@ class TestNLPControllerVectorStore:
         embeddings_service.get_embedding_dimension.return_value = 384
         embeddings_service.embeddings = Mock()
 
-        prompt_service = Mock()
 
         controller = NLPController(
             embeddings_service=embeddings_service,
-            prompt_service=prompt_service,
             generation_backend="openai",
             generation_model="gpt-3.5-turbo",
             api_key="test_key"

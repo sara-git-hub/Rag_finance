@@ -21,7 +21,7 @@ def upgrade() -> None:
     connection = op.get_bind()
     connection.execute(sa.text("""
         DO $$ BEGIN
-            CREATE TYPE currencypair AS ENUM ('MAD/EUR', 'MAD/USD');
+            CREATE TYPE currencypair AS ENUM ('EUR/MAD', 'USD/MAD');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
@@ -40,7 +40,7 @@ def upgrade() -> None:
         'exchange_rates',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('rate_uuid', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('currency_pair', postgresql.ENUM('MAD/EUR', 'MAD/USD', name='currencypair', create_type=False), nullable=False),
+        sa.Column('currency_pair', postgresql.ENUM('EUR/MAD', 'USD/MAD', name='currencypair', create_type=False), nullable=False),
         sa.Column('date', sa.Date(), nullable=False),
         sa.Column('rate_type', postgresql.ENUM('actual', 'predicted', name='ratetype', create_type=False), nullable=False),
         sa.Column('achat', sa.Float(), nullable=False),
@@ -65,7 +65,7 @@ def upgrade() -> None:
         'exchange_rate_model_metrics',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('model_version', sa.String(), nullable=False),
-        sa.Column('currency_pair', postgresql.ENUM('MAD/EUR', 'MAD/USD', name='currencypair', create_type=False), nullable=False),
+        sa.Column('currency_pair', postgresql.ENUM('EUR/MAD', 'USD/MAD', name='currencypair', create_type=False), nullable=False),
         sa.Column('mae', sa.Float(), nullable=True),
         sa.Column('mse', sa.Float(), nullable=True),
         sa.Column('rmse', sa.Float(), nullable=True),

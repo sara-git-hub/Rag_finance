@@ -96,8 +96,8 @@ Le script affiche des logs détaillés:
 
 ```
 → Fetching 2024-01-15...
-  ✓ MAD/EUR saved
-  ✓ MAD/USD saved
+  ✓ EUR/MAD saved
+  ✓ USD/MAD saved
 
 ⊘ 2024-01-20 - Data already exists, skipping
 
@@ -105,7 +105,7 @@ Le script affiche des logs détaillés:
 ⚠ API BAM has blocked the request - Too many requests
 ⚠ Waiting 60 seconds before retrying...
 ↻ Retrying 2024-01-25 after 60s wait...
-  ✓ MAD/EUR saved (after retry)
+  ✓ EUR/MAD saved (after retry)
 
 📊 Progress: 33.3% | Success: 25 | Errors: 3 | Skipped: 2
 ```
@@ -214,7 +214,7 @@ Le scheduler automatique récupère les nouveaux taux chaque jour à 9h du matin
 
 - **Fichier**: `src/exchange_rates/jobs/fetch_rates_job.py`
 - **Fréquence**: Quotidienne à 9h00
-- **Action**: Récupère les taux MAD/EUR et MAD/USD du jour
+- **Action**: Récupère les taux EUR/MAD et USD/MAD du jour
 
 ## Attribution
 
@@ -305,8 +305,8 @@ Delay between requests: 30 seconds
 Estimated duration: 2.5 minutes
 ======================================================================
 → Fetching 2024-09-01...
-  ✓ MAD/EUR saved
-  ✓ MAD/USD saved
+  ✓ EUR/MAD saved
+  ✓ USD/MAD saved
 → Fetching 2024-09-02...
   ✗ No data available from API
 ⊘ 2024-09-05 - Data already exists, skipping

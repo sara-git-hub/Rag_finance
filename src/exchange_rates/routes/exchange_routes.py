@@ -30,30 +30,30 @@ async def get_latest_rates(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Récupérer les derniers taux de change MAD/EUR et MAD/USD
+    Récupérer les derniers taux de change EUR/MAD et USD/MAD
     Accessible à tous les utilisateurs authentifiés
     """
     try:
         model = await ExchangeRateModel.create_instance(request.app.db_client)
 
-        mad_eur = await model.get_latest_rate(CurrencyPair.MAD_EUR, RateType.ACTUAL)
-        mad_usd = await model.get_latest_rate(CurrencyPair.MAD_USD, RateType.ACTUAL)
+        eur_mad = await model.get_latest_rate(CurrencyPair.EUR_MAD, RateType.ACTUAL)
+        usd_mad = await model.get_latest_rate(CurrencyPair.USD_MAD, RateType.ACTUAL)
 
         return JSONResponse(content={
             "signal": "LATEST_RATES_RETRIEVED",
             "data": {
-                "MAD/EUR": {
-                    "date": mad_eur.date.isoformat() if mad_eur else None,
-                    "achat": mad_eur.achat if mad_eur else None,
-                    "vente": mad_eur.vente if mad_eur else None,
-                    "moyenne": mad_eur.moyenne if mad_eur else None
-                } if mad_eur else None,
-                "MAD/USD": {
-                    "date": mad_usd.date.isoformat() if mad_usd else None,
-                    "achat": mad_usd.achat if mad_usd else None,
-                    "vente": mad_usd.vente if mad_usd else None,
-                    "moyenne": mad_usd.moyenne if mad_usd else None
-                } if mad_usd else None
+                "EUR/MAD": {
+                    "date": eur_mad.date.isoformat() if eur_mad else None,
+                    "achat": eur_mad.achat if eur_mad else None,
+                    "vente": eur_mad.vente if eur_mad else None,
+                    "moyenne": eur_mad.moyenne if eur_mad else None
+                } if eur_mad else None,
+                "USD/MAD": {
+                    "date": usd_mad.date.isoformat() if usd_mad else None,
+                    "achat": usd_mad.achat if usd_mad else None,
+                    "vente": usd_mad.vente if usd_mad else None,
+                    "moyenne": usd_mad.moyenne if usd_mad else None
+                } if usd_mad else None
             }
         })
 
@@ -68,7 +68,7 @@ async def get_latest_rates(
 @exchange_router.get("/predictions")
 async def get_predictions(
     request: Request,
-    currency_pair: str = Query(..., description="MAD/EUR or MAD/USD"),
+    currency_pair: str = Query(..., description="EUR/MAD or USD/MAD"),
     days_history: int = Query(30, ge=7, le=365),
     days_ahead: int = Query(7, ge=1, le=30),
     current_user: dict = Depends(get_current_user)
@@ -78,7 +78,7 @@ async def get_predictions(
     Accessible à tous les utilisateurs authentifiés
 
     Args:
-        currency_pair: "MAD/EUR" ou "MAD/USD" (query parameter)
+        currency_pair: "EUR/MAD" ou "USD/MAD" (query parameter)
         days_history: Nombre de jours d'historique (défaut: 30)
         days_ahead: Nombre de jours de prédictions (défaut: 7)
     """
@@ -89,7 +89,7 @@ async def get_predictions(
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid currency pair. Must be 'MAD/EUR' or 'MAD/USD'"
+                detail=f"Invalid currency pair. Must be 'EUR/MAD' or 'USD/MAD'"
             )
 
         # Récupérer les prédictions
@@ -125,7 +125,7 @@ async def get_predictions(
 @exchange_router.get("/history")
 async def get_history(
     request: Request,
-    currency_pair: str = Query(..., description="MAD/EUR or MAD/USD"),
+    currency_pair: str = Query(..., description="EUR/MAD or USD/MAD"),
     days: int = Query(365, ge=1, le=730),
     current_user: dict = Depends(get_current_user)
 ):
@@ -134,7 +134,7 @@ async def get_history(
     Accessible à tous les utilisateurs authentifiés
 
     Args:
-        currency_pair: "MAD/EUR" ou "MAD/USD" (query parameter)
+        currency_pair: "EUR/MAD" ou "USD/MAD" (query parameter)
         days: Nombre de jours d'historique (défaut: 365 = 1 an)
     """
     try:
@@ -144,7 +144,7 @@ async def get_history(
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid currency pair. Must be 'MAD/EUR' or 'MAD/USD'"
+                detail=f"Invalid currency pair. Must be 'EUR/MAD' or 'USD/MAD'"
             )
 
         model = await ExchangeRateModel.create_instance(request.app.db_client)
@@ -182,7 +182,7 @@ async def get_history(
 @exchange_router.post("/admin/train-model")
 async def train_model(
     request: Request,
-    currency_pair: str = Query(..., description="MAD/EUR or MAD/USD"),
+    currency_pair: str = Query(..., description="EUR/MAD or USD/MAD"),
     days_history: int = Query(175, ge=60, le=730),
     current_user: dict = Depends(require_admin)
 ):
@@ -201,7 +201,7 @@ async def train_model(
             logger.error(f"Invalid currency pair '{currency_pair}': {ve}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid currency pair: '{currency_pair}'. Expected: MAD/EUR or MAD/USD"
+                detail=f"Invalid currency pair: '{currency_pair}'. Expected: EUR/MAD or USD/MAD"
             )
 
         prediction_service = PredictionService(
@@ -236,7 +236,7 @@ async def train_model(
 @exchange_router.post("/admin/generate-predictions")
 async def generate_predictions(
     request: Request,
-    currency_pair: str = Query(..., description="MAD/EUR or MAD/USD"),
+    currency_pair: str = Query(..., description="EUR/MAD or USD/MAD"),
     days_ahead: int = Query(7, ge=1, le=30),
     current_user: dict = Depends(require_admin)
 ):

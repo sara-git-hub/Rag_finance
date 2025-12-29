@@ -10,11 +10,11 @@ Plateforme de Retrieval-Augmented Generation (RAG) permettant l'analyse de docum
 - **PostgreSQL (pgvector)** - Base de données relationnelle avec support vectoriel
 - **Qdrant** - Base de données vectorielle pour embeddings
 - **SQLAlchemy + Alembic** - ORM et migrations
-- **Python 3.12**
+- **Python 3.10** (Docker) / **Python 3.12** (CI/CD)
 
 ### LLM & Embeddings
-- **Ollama** - LLM local (llama3.2, mistral)
-- **HuggingFace sentence-transformers** - Embeddings locaux (paraphrase-MiniLM-L6-v2)
+- **Ollama** - LLM local (llama3.1, mistral, gemma2)
+- **HuggingFace sentence-transformers** - Embeddings locaux (paraphrase-multilingual-mpnet-base-v2, 768 dimensions)
 - **Support multi-providers** - Groq, OpenAI, Cohere
 
 ### Frontend
@@ -37,7 +37,7 @@ Le projet utilise Docker Compose avec 10 services orchestrés:
 | **frontend** | 3001 | Interface React |
 | **fastapi** | 8000 | API Backend |
 | **grafana** | 3000 | Dashboards monitoring |
-| **ollama** | 11434 | LLM local (llama3.2, mistral) |
+| **ollama** | 11434 | LLM local (llama3.1, mistral, gemma2) |
 | **pgvector** | 5432 | PostgreSQL avec extension vectorielle |
 | **qdrant** | 6333, 6334 | Base de données vectorielle |
 | **prometheus** | 9090 | Collecte métriques |
@@ -70,6 +70,11 @@ docker-compose up -d
 # Vérifier les logs
 docker logs fastapi -f
 ```
+
+# Créer l'environnement virtuel
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 
 ### Accès aux services
 
@@ -134,8 +139,7 @@ Le workflow `.github/workflows/unit-tests.yml` s'exécute automatiquement:
 3. Crée un fichier `.env` de test avec des valeurs mock
 4. Exécute les tests unitaires compatibles CI/CD (131 tests)
 5. Génère un rapport de couverture XML
-6. Upload les résultats vers Codecov
-7. Ajoute un commentaire sur les PR avec le pourcentage de couverture
+6. Ajoute un commentaire sur les PR avec le pourcentage de couverture
 
 ### Tests CI/CD vs Tests Locaux
 
@@ -156,13 +160,6 @@ Le workflow `.github/workflows/unit-tests.yml` s'exécute automatiquement:
 - GitHub Actions a une limite de 14GB d'espace disque
 - Les packages ML (torch ~3GB, tensorflow ~500MB) dépassent cette limite
 - Les tests lourds s'exécutent uniquement en local avec Docker
-
-### Configuration Codecov
-
-Pour activer l'upload vers Codecov:
-1. Créez un compte sur [codecov.io](https://codecov.io)
-2. Ajoutez votre repository
-3. Ajoutez le secret `CODECOV_TOKEN` dans Settings > Secrets and variables > Actions
 
 ### Voir les résultats
 
