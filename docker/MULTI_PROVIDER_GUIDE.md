@@ -48,7 +48,7 @@ GENERATION_MODEL_ID=mistral
 
 # Pour Groq (GRATUIT & RAPIDE)
 GENERATION_BACKEND=groq
-GENERATION_MODEL_ID=llama-3.1-70b-versatile
+GENERATION_MODEL_ID=llama-3.3-70b-versatile
 GROQ_API_KEY=votre-cle-gratuite-ici
 ```
 
@@ -156,7 +156,7 @@ GROQ_API_KEY=gsk_votre_cle_ici
 
 | Modèle | Taille | Vitesse | Qualité |
 |--------|--------|---------|---------|
-| `llama-3.1-70b-versatile` | 70B | ⚡⚡⚡ | ⭐⭐⭐⭐⭐ |
+| `llama-3.3-70b-versatile` | 70B | ⚡⚡⚡ | ⭐⭐⭐⭐⭐ |
 | `llama-3.1-8b-instant` | 8B | ⚡⚡⚡⚡ | ⭐⭐⭐⭐ |
 | `mixtral-8x7b-32768` | 46B | ⚡⚡⚡ | ⭐⭐⭐⭐ |
 | `gemma2-9b-it` | 9B | ⚡⚡⚡⚡ | ⭐⭐⭐⭐ |

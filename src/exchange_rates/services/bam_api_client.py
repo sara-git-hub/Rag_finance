@@ -259,12 +259,12 @@ class BankAlMaghribAPI:
 
                     # Enregistrer le succès et les valeurs dans les métriques
                     EXCHANGE_RATE_FETCH_SUCCESS.labels(
-                        currency_pair=f"MAD/{devise}",
+                        currency_pair=f"{devise}/MAD",
                         source="Bank Al-Maghrib API"
                     ).inc()
-                    LAST_EXCHANGE_RATE.labels(currency_pair=f"MAD/{devise}", rate_type="achat").set(achat)
-                    LAST_EXCHANGE_RATE.labels(currency_pair=f"MAD/{devise}", rate_type="vente").set(vente)
-                    LAST_EXCHANGE_RATE.labels(currency_pair=f"MAD/{devise}", rate_type="moyen").set(moyen)
+                    LAST_EXCHANGE_RATE.labels(currency_pair=f"{devise}/MAD", rate_type="achat").set(achat)
+                    LAST_EXCHANGE_RATE.labels(currency_pair=f"{devise}/MAD", rate_type="vente").set(vente)
+                    LAST_EXCHANGE_RATE.labels(currency_pair=f"{devise}/MAD", rate_type="moyen").set(moyen)
 
                     return result
 
@@ -285,18 +285,18 @@ class BankAlMaghribAPI:
 
                     # Enregistrer le succès et les valeurs dans les métriques
                     EXCHANGE_RATE_FETCH_SUCCESS.labels(
-                        currency_pair=f"MAD/{devise}",
+                        currency_pair=f"{devise}/MAD",
                         source="Bank Al-Maghrib API"
                     ).inc()
-                    LAST_EXCHANGE_RATE.labels(currency_pair=f"MAD/{devise}", rate_type="achat").set(achat)
-                    LAST_EXCHANGE_RATE.labels(currency_pair=f"MAD/{devise}", rate_type="vente").set(vente)
-                    LAST_EXCHANGE_RATE.labels(currency_pair=f"MAD/{devise}", rate_type="moyen").set(moyen)
+                    LAST_EXCHANGE_RATE.labels(currency_pair=f"{devise}/MAD", rate_type="achat").set(achat)
+                    LAST_EXCHANGE_RATE.labels(currency_pair=f"{devise}/MAD", rate_type="vente").set(vente)
+                    LAST_EXCHANGE_RATE.labels(currency_pair=f"{devise}/MAD", rate_type="moyen").set(moyen)
 
                     return result
 
             logger.warning(f"Invalid rate data (missing required fields): {rate_data}")
             EXCHANGE_RATE_FETCH_ERROR.labels(
-                currency_pair=f"MAD/{devise}",
+                currency_pair=f"{devise}/MAD",
                 error_type="invalid_data"
             ).inc()
             return None
@@ -305,7 +305,7 @@ class BankAlMaghribAPI:
             logger.error(f"Error parsing exchange rate data: {e}")
             logger.debug(f"Raw data: {data}")
             EXCHANGE_RATE_FETCH_ERROR.labels(
-                currency_pair=f"MAD/{devise}",
+                currency_pair=f"{devise}/MAD",
                 error_type="parse_error"
             ).inc()
             return None

@@ -430,7 +430,7 @@ def create_rag_service(
             num_predict=llm_kwargs.get("max_tokens", 1000)
         )
     elif llm_provider == "groq":
-        model_name = model_name or "llama-3.1-70b-versatile"
+        model_name = model_name or "llama-3.3-70b-versatile"
         llm = ChatGroq(
             model=model_name,
             groq_api_key=api_key,
