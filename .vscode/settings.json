@@ -1,6 +1,0 @@
-{
-    "python.languageServer": "Pylance",
-    "files.autoSave": "off",
-    "editor.formatOnSave": false,
-    "python.formatting.provider": "none"
-}
