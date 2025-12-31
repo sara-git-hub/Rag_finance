@@ -1,17 +1,5 @@
 # Tests - Fil Rouge
 
-Suite de tests complète pour le projet Fil Rouge.
-
-## 🎉 Dernière Exécution
-
-✅ **286 tests passés** en 5min 52s | **Couverture: 32%** | **11 modules à 100%**
-
-**Récentes améliorations**:
-- 🔄 Migration OpenAI → Groq pour tests LLM (économies + vitesse)
-- 🔒 Isolation Qdrant via `tmp_path` (plus de verrouillage fichiers)
-- 🔒 Isolation PostgreSQL (`minirag_test` séparée de production)
-- 📁 Centralisation tests dans `tests/` (`src/tests/` supprimé)
-- 🧹 Cleanup automatique avec `vectorstore.close()`
 
 ## 📁 Structure
 
@@ -50,7 +38,7 @@ tests/
 
 ## 🚀 Lancer les tests
 
-⚠️ **Important** : Tous les tests sont maintenant centralisés dans `tests/` (le dossier `src/tests` a été supprimé)
+⚠️ **Important** : Tous les tests sont maintenant centralisés dans `tests/`
 
 ### Tous les tests
 ```bash
@@ -121,15 +109,9 @@ pytest tests/unit/services/test_rag_service.py::TestRAGServiceWithLLM::test_answ
 
 ### Tests nécessitant une clé API
 
-Certains tests RAG nécessitent une clé API Groq :
+5 tests RAG nécessitent une clé Groq (`TestRAGServiceWithLLM`).
 
-```bash
-# Définir la clé API Groq
-export GROQ_API_KEY="votre_clé_groq"
-
-# Les tests seront skipped si GROQ_API_KEY n'est pas définie
-pytest tests/unit/services/test_rag_service.py::TestRAGServiceWithLLM
-```
+La clé est chargée automatiquement depuis `src/.env`. Si `GROQ_API_KEY` n'est pas définie, ces tests sont automatiquement skippés.
 
 ## 📊 Couverture Actuelle
 
@@ -174,65 +156,6 @@ pytest tests/unit/services/test_rag_service.py::TestRAGServiceWithLLM
 
 **Légende**: 🟢 = Excellent (≥80%) | 🟡 = Moyen (40-79%) | 🔴 = Faible (<40%)
 
-## 🎯 Priorités
-
-### ✅ Phase 1 - Complétée (286 tests)
-**Services LangChain** (87% couverture) ✅
-- DocumentService: 100% ✅
-- EmbeddingsService: 100% ✅
-- PromptService: 100% ✅
-- RAGService: 68% 🟡
-- VectorStoreService: 69% 🟡
-
-**Controllers** (87% couverture) ✅
-- BaseController: 100% ✅
-- DataController: 100% ✅
-- ProcessController: 100% ✅
-- ProjectController: 100% ✅
-- NLPController: 33% 🔴
-
-**Helpers** (100% couverture) ✅
-- auth.py: 100% ✅
-- config.py: 100% ✅
-
-**Modèles DB Schemes** (100% couverture) ✅
-- Tous les schemes: 100% ✅
-
-**ML** (95% couverture) ✅
-- lstm_model.py: 95% ✅
-
-**Routes** (15% couverture partielle)
-- auth.py: 93% ✅
-- Autres routes: 0% 🔴
-
-### 🔴 Phase 2 - PRIORITAIRE (Prochaines étapes)
-
-**1. Tests Routes/Endpoints API** - 0% couverture
-- admin.py (247 lignes non testées)
-- conversation.py (111 lignes)
-- data.py (104 lignes)
-- nlp.py (91 lignes)
-- base.py (8 lignes)
-- Target: ~100 tests, 75% couverture
-
-**2. Tests Exchange Rates** - 0% couverture
-- jobs/ (fetch_rates_job, initial_backfill, scheduler)
-- models/ExchangeRateModel.py
-- routes/exchange_routes.py
-- services/ (bam_api_client, prediction_service)
-- Target: ~60 tests, 60% couverture
-
-**3. Tests Models (Legacy)** - 7% couverture
-- AssetModel, ChunkModel, ConversationModel, ProjectModel
-- Améliorer UserModel (41% → 80%)
-- Target: ~30 tests, 70% couverture
-
-### 🟡 Phase 3 - Amélioration Continue
-- RAGService: 68% → 80% (+12%)
-- VectorStoreService: 69% → 80% (+11%)
-- NLPController: 33% → 70% (+37%)
-- auth.py: 93% → 100% (+7%)
-
 ## 🔄 CI/CD - Intégration Continue
 
 ### ✅ GitHub Actions Configuré
@@ -246,10 +169,10 @@ Le projet utilise GitHub Actions pour l'exécution automatique des tests:
 - Pull Requests vers `main` ou `develop`
 
 **Exécution**:
-1. Configuration Python 3.12
+1. Configuration Python 3.10
 2. Installation des dépendances lightweight (`src/requirements-test.txt`)
 3. Création d'un fichier `.env` de test avec valeurs mock
-4. Exécution des tests unitaires compatibles CI/CD (131 tests)
+4. Exécution des tests unitaires compatibles CI/CD (107 tests)
 5. Génération du rapport de couverture (XML)
 6. Commentaire automatique sur les PR avec le % de couverture
 
@@ -257,8 +180,8 @@ Le projet utilise GitHub Actions pour l'exécution automatique des tests:
 
 | Environnement | Tests | Durée | Packages |
 |---------------|-------|-------|----------|
-| **CI/CD (GitHub Actions)** | 131 tests | ~11s | Lightweight (requirements-test.txt) |
-| **Local (Docker)** | 286 tests | ~6min | Complets (requirements.txt) |
+| **CI/CD (GitHub Actions)** | 107 tests | ~11s | Lightweight (requirements-test.txt) |
+| **Local** | 286 tests | ~6min | Complets (requirements.txt) |
 
 **Tests exclus du CI/CD** (contraintes espace disque 14GB):
 - ❌ Tests PostgreSQL: `integration/`, `unit/models/`
@@ -279,7 +202,7 @@ pytest unit/services/test_document_service.py unit/services/test_prompt_service.
 
 **Voir les résultats**:
 - Onglet **Actions** sur GitHub
-- Badge de statut sur les PR (vert ✅ si 131 tests passent)
+- Badge de statut sur les PR (vert ✅ si 107 tests passent)
 - Rapport de couverture commenté sur chaque PR
 
 ### Configuration Locale
@@ -306,10 +229,16 @@ pytest unit/services/test_document_service.py unit/services/test_prompt_service.
 ls -lh coverage.xml
 ```
 
-**Pour lancer TOUS les tests (286) localement avec Docker**:
+**Pour lancer TOUS les tests (286) localement**:
 ```bash
-# Depuis la machine hôte
-docker exec fastapi bash -c "cd ../tests && pytest -v --cov=../src --cov-report=term-missing"
+# Créer environnement virtuel
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r src/requirements.txt
+
+# Lancer tous les tests
+cd tests
+pytest -v --cov=../src --cov-report=term-missing
 ```
 
 ## 🛡️ Isolation des Bases de Données
@@ -364,26 +293,6 @@ def cohere_api_key():
 @pytest.fixture
 def test_project_id():
     """ID projet de test"""
-```
-
-### À créer
-
-```python
-@pytest.fixture
-def test_db_session():
-    """Session DB de test (SQLite en mémoire)"""
-
-@pytest.fixture
-def test_client():
-    """Client FastAPI pour tests API"""
-
-@pytest.fixture
-def admin_token():
-    """Token JWT admin pour tests"""
-
-@pytest.fixture
-def test_project():
-    """Projet de test complet"""
 ```
 
 ## 📝 Conventions
@@ -460,86 +369,11 @@ def test_something():
 
 ## 📚 Documentation
 
-- [Analyse complète](./ANALYSE_TESTS_ACTUELS.md)
-- [Recommandations](../docs/phases/06_RECOMMENDATIONS.md)
 - [pytest Documentation](https://docs.pytest.org/)
 - [pytest-cov](https://pytest-cov.readthedocs.io/)
 
-## ✅ Checklist Nouveau Test
-
-- [ ] Fichier dans le bon dossier
-- [ ] Nom commence par `test_`
-- [ ] Docstrings claires
-- [ ] Markers appropriés
-- [ ] Fixtures utilisées
-- [ ] Arrange-Act-Assert
-- [ ] Edge cases testés
-- [ ] Assertions claires
-- [ ] Pas de dépendances externes non mockées
-
----
-
-## 📈 Résumé des Accomplissements
-
-### ✅ Tests Créés: 286 tests au total
-
-**Couverture Globale**: 32% (22/34 modules testés)
-
-**Modules 100% couverts** (11 modules):
-- ✅ Services: DocumentService, EmbeddingsService, PromptService
-- ✅ Controllers: Base, Data, Process, Project
-- ✅ Helpers: auth.py, config.py
-- ✅ DB Schemes: Tous les 7 schemes (asset, datachunk, project, user, conversation, exchange_rate, minirag_base)
-
-**Modules excellents ≥90%** (2 modules):
-- ✅ ML: lstm_model (95%)
-- ✅ Routes: auth (93%)
-
-**Modules moyens 60-89%** (2 modules):
-- 🟡 RAGService: 68%
-- 🟡 VectorStoreService: 69%
-
-**Améliorations réalisées**:
-- 🎯 Migration OpenAI → Groq pour tests LLM
-- 🎯 Isolation Qdrant avec tmp_path (fini verrouillage fichiers)
-- 🎯 Isolation PostgreSQL (minirag_test séparée de production)
-- 🎯 Centralisation tests dans `tests/` (suppression `src/tests/`)
-- 🎯 Cleanup automatique avec `vectorstore.close()`
 
 **Infrastructure**:
 - ✅ GitHub Actions workflow configuré
 - ✅ Tests automatiques sur push/PR
 - ✅ Rapports de couverture automatiques
-- ✅ Documentation complète et à jour
-
-### 🎯 Prochaines Étapes (pour atteindre 75%)
-
-**Phase 2 - Routes & Exchange Rates** (~160 tests):
-1. Routes API (admin, conversation, data, nlp, base)
-   - Target: ~100 tests, 75% couverture
-2. Exchange Rates (jobs, models, routes, services)
-   - Target: ~60 tests, 60% couverture
-
-**Phase 3 - Models Legacy** (~30 tests):
-- AssetModel, ChunkModel, ConversationModel, ProjectModel
-- Améliorer UserModel: 41% → 80%
-- Target: 70% couverture
-
-**Phase 4 - Amélioration Continue**:
-- RAGService: 68% → 80%
-- VectorStoreService: 69% → 80%
-- NLPController: 33% → 70%
-- auth.py: 93% → 100%
-
-**Objectif Final**: 75% de couverture globale (~476 tests)
-
----
-
-**Dernière mise à jour**: 2025-12-15
-**Total Tests**: 286 tests passés (tous isolés de la production) ✅
-**Temps d'exécution**: 5min 52s
-**LLM Provider**: Groq (llama-3.3-70b-versatile) pour tests réels
-**Embeddings**: Local HuggingFace uniquement
-**Couverture Globale**: 32% (22/34 modules) | 100% sur 11 modules critiques ✅
-**Isolation**: ✅ Qdrant (tmp_path) | ✅ PostgreSQL (minirag_test)
-**Structure**: ✅ Tous les tests centralisés dans `tests/` (src/tests supprimé)

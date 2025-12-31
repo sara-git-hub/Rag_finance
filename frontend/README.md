@@ -9,6 +9,7 @@ Frontend de l'application RAG Finance construit avec React, Tailwind CSS et Vite
 - ✅ Routes protégées
 - ✅ Design moderne avec Tailwind CSS
 - ✅ Responsive
+- ✅ Visualisation des taux de change avec graphiques (Recharts)
 
 ## 📋 Pages Implémentées
 
@@ -16,16 +17,26 @@ Frontend de l'application RAG Finance construit avec React, Tailwind CSS et Vite
 - `/login` - Connexion
 - `/register` - Inscription
 
-### Pages Authentifiées
+### Pages Authentifiées (User + Admin)
 - `/dashboard` - Tableau de bord
-- `/search` - Recherche (User + Admin)
-- `/qa` - Questions/Réponses (User + Admin)
+- `/search` - Recherche sémantique
+- `/qa` - Questions/Réponses RAG
+- `/exchange-rates` - Visualisation taux de change EUR/MAD et USD/MAD
 
 ### Pages Admin Uniquement
-- `/upload` - Upload de fichiers
+- `/upload` - Upload de fichiers PDF/TXT
 - `/process` - Traitement des documents
 - `/index` - Indexation vectorielle
 - `/users` - Gestion des utilisateurs
+
+### Pages Admin - Gestion Base de Données
+- `/admin/projects` - Gestion des projets
+- `/admin/assets` - Gestion des assets (fichiers)
+- `/admin/chunks` - Gestion des chunks de documents
+- `/admin/conversations` - Gestion des conversations
+- `/admin/messages` - Gestion des messages
+- `/admin/vectors` - Gestion des vecteurs (Qdrant)
+- `/admin/exchange-rates` - Gestion des taux de change (admin)
 
 ## 🛠️ Technologies
 
@@ -33,8 +44,9 @@ Frontend de l'application RAG Finance construit avec React, Tailwind CSS et Vite
 - **React Router 6** - Navigation
 - **Tailwind CSS 3** - Styling
 - **Axios** - API calls
-- **Vite** - Build tool
+- **Vite 5** - Build tool
 - **JWT Decode** - Token management
+- **Recharts** - Graphiques et visualisation
 
 ## 🐳 Lancer avec Docker
 
@@ -78,26 +90,45 @@ npm run preview
 ```
 frontend/
 ├── src/
-│   ├── components/         # Composants réutilisables
-│   │   ├── Navbar.jsx     # Menu navigation
-│   │   └── ProtectedRoute.jsx
-│   ├── pages/             # Pages de l'application
+│   ├── components/              # Composants réutilisables
+│   │   ├── Navbar.jsx          # Menu navigation
+│   │   ├── ProtectedRoute.jsx  # Protection routes
+│   │   ├── ProjectName.jsx     # Composant nom projet
+│   │   ├── ProjectLanguage.jsx # Composant langue projet
+│   │   └── admin/              # Composants admin
+│   ├── pages/                  # Pages de l'application
 │   │   ├── Login.jsx
 │   │   ├── Register.jsx
-│   │   └── Dashboard.jsx
-│   ├── services/          # API calls
+│   │   ├── Dashboard.jsx
+│   │   ├── Upload.jsx
+│   │   ├── Process.jsx
+│   │   ├── IndexPage.jsx
+│   │   ├── Search.jsx
+│   │   ├── QA.jsx
+│   │   ├── Users.jsx
+│   │   ├── ExchangeRates.jsx
+│   │   └── admin/              # Pages admin DB
+│   │       ├── AdminProjects.jsx
+│   │       ├── AdminAssets.jsx
+│   │       ├── AdminChunks.jsx
+│   │       ├── AdminConversations.jsx
+│   │       ├── AdminMessages.jsx
+│   │       ├── AdminVectors.jsx
+│   │       └── AdminExchangeRates.jsx
+│   ├── services/               # API calls
 │   │   └── api.js
-│   ├── context/           # Context React
+│   ├── context/                # Context React
 │   │   └── AuthContext.jsx
-│   ├── App.jsx            # Routes principales
-│   ├── main.jsx           # Point d'entrée
-│   └── index.css          # Styles Tailwind
-├── Dockerfile             # Configuration Docker
-├── nginx.conf             # Config Nginx
-├── vite.config.js         # Config Vite
-├── tailwind.config.js     # Config Tailwind
+│   ├── hooks/                  # Custom hooks
+│   │   └── useConversation.js
+│   ├── App.jsx                 # Routes principales
+│   ├── main.jsx                # Point d'entrée
+│   └── index.css               # Styles Tailwind
+├── Dockerfile                  # Configuration Docker
+├── nginx.conf                  # Config Nginx
+├── vite.config.js              # Config Vite
+├── tailwind.config.js          # Config Tailwind
 └── package.json
-
 ```
 
 ## 🔄 Flux d'Authentification
@@ -126,17 +157,6 @@ Modifier dans `src/services/api.js`:
 ```js
 const API_URL = '/api/v1';
 ```
-
-## 📝 À Implémenter
-
-Les pages suivantes ont des placeholders et doivent être implémentées:
-
-- [ ] Page Upload
-- [ ] Page Process
-- [ ] Page Indexation
-- [ ] Page Recherche
-- [ ] Page Q&A
-- [ ] Page Gestion Utilisateurs
 
 ## 🐛 Troubleshooting
 

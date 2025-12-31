@@ -1,4 +1,4 @@
-## Run Alembic Migrations
+## Exécuter les migrations Alembic
 
 ### Configuration
 
@@ -6,21 +6,21 @@
 cp alembic.ini.example alembic.ini
 ```
 
-- Update the `alembic.ini` with your database credentials (`sqlalchemy.url`)
-  
-### (Optional) Create a new migration
+- Mettre à jour `alembic.ini` avec vos identifiants de base de données (`sqlalchemy.url`)
+
+### (Optionnel) Créer une nouvelle migration
 
 ```bash
 alembic revision --autogenerate -m "Add ..."
 ```
 
-### Upgrade the database
+### Mettre à jour la base de données
 
 ```bash
 alembic upgrade head
 ```
 
-## Run Migrations with Docker
+## Exécuter les migrations avec Docker
 
 Lorsque vous utilisez Docker, exécutez les migrations depuis le conteneur FastAPI pour éviter les problèmes de résolution DNS (`pgvector`):
 
