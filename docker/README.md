@@ -1,6 +1,6 @@
 # Configuration Docker pour l'application MiniRAG
 
-Ce répertoire contient la configuration Docker pour l'application MiniRAG, incluant tous les services nécessaires pour le développement et le monitoring.
+Ce répertoire contient la configuration Docker pour l'application RAG FINANCE, incluant tous les services nécessaires pour le développement et le monitoring.
 
 ## Services
 

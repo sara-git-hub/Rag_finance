@@ -1,4 +1,4 @@
-# MiniRAG - Système RAG avec LangChain
+# RAG FINANCE - Système RAG avec LangChain
 
 Plateforme de Retrieval-Augmented Generation (RAG) permettant l'analyse de documents PDF, la génération de réponses intelligentes via LLM, et la prédiction des taux de change EUR/MAD et USD/MAD avec un modèle LSTM.
 
