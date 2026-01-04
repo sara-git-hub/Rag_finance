@@ -172,7 +172,7 @@ Le projet utilise GitHub Actions pour l'exécution automatique des tests:
 1. Configuration Python 3.10
 2. Installation des dépendances lightweight (`src/requirements-test.txt`)
 3. Création d'un fichier `.env` de test avec valeurs mock
-4. Exécution des tests unitaires compatibles CI/CD (107 tests)
+4. Exécution des tests unitaires compatibles CI/CD (113 tests)
 5. Génération du rapport de couverture (XML)
 6. Commentaire automatique sur les PR avec le % de couverture
 
@@ -180,7 +180,7 @@ Le projet utilise GitHub Actions pour l'exécution automatique des tests:
 
 | Environnement | Tests | Durée | Packages |
 |---------------|-------|-------|----------|
-| **CI/CD (GitHub Actions)** | 107 tests | ~11s | Lightweight (requirements-test.txt) |
+| **CI/CD (GitHub Actions)** | 113 tests | ~11s | Lightweight (requirements-test.txt) |
 | **Local** | 286 tests | ~6min | Complets (requirements.txt) |
 
 **Tests exclus du CI/CD** (contraintes espace disque 14GB):
@@ -202,7 +202,7 @@ pytest unit/services/test_document_service.py unit/services/test_prompt_service.
 
 **Voir les résultats**:
 - Onglet **Actions** sur GitHub
-- Badge de statut sur les PR (vert ✅ si 107 tests passent)
+- Badge de statut sur les PR (vert ✅ si 113 tests passent)
 - Rapport de couverture commenté sur chaque PR
 
 ### Configuration Locale

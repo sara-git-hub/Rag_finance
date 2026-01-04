@@ -148,7 +148,7 @@ fil_rouge/
 │   │
 │   ├── main.py                         # Application FastAPI
 │   ├── requirements.txt                # Dépendances complètes (286 tests)
-│   ├── requirements-test.txt           # Dépendances CI/CD (107 tests)
+│   ├── requirements-test.txt           # Dépendances CI/CD (113 tests)
 │   └── .env.example
 │
 ├── tests/
@@ -195,7 +195,7 @@ fil_rouge/
 
 ```bash
 # Cloner le repository
-git clone <repo-url>
+git clone <https://github.com/sara-git-hub/Rag_finance.git>
 cd fil_rouge
 
 # Configurer les variables d'environnement
@@ -228,10 +228,24 @@ pip install -r src/requirements.txt
 cp src/.env.example src/.env
 # Éditer src/.env avec vos clés API
 
-# Lancer l'application (nécessite PostgreSQL et Qdrant installés localement)
+# Lancer le backend (nécessite PostgreSQL et Qdrant installés localement)
 cd src
 uvicorn main:app --reload
 ```
+
+**Frontend (dans un autre terminal)** :
+
+```bash
+# Modifier la configuration pour pointer vers localhost
+# Éditer frontend/vite.config.js ligne 11 : target: 'http://localhost:8000'
+
+# Installer et lancer
+cd frontend
+npm install
+npm run dev
+```
+
+**Accès** : http://localhost:5173 (frontend) → proxie vers http://localhost:8000 (backend API)
 
 ## ⚙️ Configuration
 
@@ -378,24 +392,24 @@ Le workflow `.github/workflows/unit-tests.yml` s'exécute automatiquement:
 1. Configure Python 3.10 (identique à la production Docker)
 2. Installe les dépendances lightweight depuis `src/requirements-test.txt`
 3. Crée un fichier `.env` de test avec des valeurs mock
-4. Exécute les tests unitaires compatibles CI/CD (107 tests)
+4. Exécute les tests unitaires compatibles CI/CD (113 tests)
 5. Génère un rapport de couverture XML
 6. Ajoute un commentaire sur les PR avec le pourcentage de couverture
 
 ### Tests CI/CD vs Tests Locaux
 
-**CI/CD (GitHub Actions)** - 107 tests légers (~11s)
+**CI/CD (GitHub Actions)** - 113 tests légers (~11s)
 - Tests des services: `document_service`, `prompt_service`
 - Tests des contrôleurs (partiels): `base_controller`, `data_controller`, `project_controller`
 - Tests des helpers: `auth`, `config`
 - **Exclusions**:
   - PostgreSQL, ML packages (torch, tensorflow)
   - Tests RAG/embeddings/vectorstore
-  - 24 tests incompatibles avec Python 3.10 (mocking strict)
+  - 18 tests désélectionnés (incompatibles avec CI/CD ou nécessitant dépendances lourdes)
 
 **Local** - 286 tests complets (~6min)
-- Tous les 107 tests CI/CD
-- 24 tests controllers avec mocks complexes
+- Tous les 113 tests CI/CD
+- 18 tests désélectionnés du CI/CD (nécessitant PostgreSQL, VectorStore ou ML)
 - Tests d'intégration avec PostgreSQL (25 tests)
 - Tests ML (LSTM, 27 tests)
 - Tests modèles de base de données (57 tests)
@@ -404,7 +418,7 @@ Le workflow `.github/workflows/unit-tests.yml` s'exécute automatiquement:
 **Pourquoi cette séparation?**
 - GitHub Actions a une limite de 14GB d'espace disque
 - Les packages ML (torch ~3GB, tensorflow ~500MB) dépassent cette limite
-- Python 3.10 (CI/CD) a un mocking plus strict que Python 3.12 (dev local)
+- Certains tests nécessitent PostgreSQL/Qdrant/VectorStore non disponibles en CI/CD
 - Les tests lourds s'exécutent uniquement en local
 
 **Note sur les versions Python:**
@@ -412,7 +426,7 @@ Le workflow `.github/workflows/unit-tests.yml` s'exécute automatiquement:
 - **CI/CD (GitHub Actions)**: Python 3.10
 - **Développement local (venv)**: Python 3.12 recommandé mais non obligatoire
 - Les 286 tests passent tous avec Python 3.12 en local
-- 24 tests sont exclus du CI/CD car incompatibles avec le système de mocking strict de Python 3.10
+- 18 tests sont désélectionnés du CI/CD (nécessitent dépendances lourdes ou bases de données)
 
 ### Voir les résultats
 
