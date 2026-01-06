@@ -74,10 +74,10 @@ jobs:
           --deselect=unit/controllers/test_process_controller.py::TestProcessController::test_get_file_extension \
           --deselect=unit/controllers/test_process_controller.py::TestProcessController::test_get_file_extension_various_types
 
-    - name: Generate coverage badge
+    - name: Extract coverage percentage
       if: github.ref == 'refs/heads/main'
       run: |
-        COVERAGE=$(grep -oP 'TOTAL.*?\K[0-9]+(?=%)' tests/coverage.xml || echo "0")
+        COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' tests/coverage.xml | head -1 | awk '{printf "%.0f", $1 * 100}')
         echo "Coverage: ${COVERAGE}%"
 
     - name: Comment PR with coverage
